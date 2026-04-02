@@ -15,7 +15,7 @@ export class ObrasController {
         message: 'Obras obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getAll obras:', error)
+      console.error('Error en getAll obras:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las obras'
