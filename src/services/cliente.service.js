@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { ClienteModel } from '../models/cliente.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ClienteService {
   async getAll() {
@@ -38,6 +39,10 @@ export class ClienteService {
       
       if (validationErrors.length > 0) {
         throw new Error(validationErrors.join(', '));
+      }
+
+       if (!cliente.id) {
+        cliente.id = uuidv4();
       }
 
       const { data, error } = await supabase

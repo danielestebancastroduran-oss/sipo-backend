@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { ObraModel } from '../models/obras.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ObrasService {
   async getAll() {
@@ -52,6 +53,9 @@ export class ObrasService {
         throw new Error(validationErrors.join(', '));
       }
 
+      if(!obra.id) {
+        obra.id = uuidv4();
+      }
       const { data, error } = await supabase
         .from('obras')
         .insert([ObraModel.toDatabase(obra)])
