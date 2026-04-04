@@ -104,9 +104,7 @@ export class UsuarioService {
         updateData.password_hash = await bcrypt.hash(usuarioData.password, 10);
         delete updateData.password; // Eliminar password plano
       }
-      
-      // Crear usuario solo para validación
-      const usuario = new UsuarioModel({ ...updateData, id });
+
       
       const { data, error } = await supabase
         .from('usuarios')
