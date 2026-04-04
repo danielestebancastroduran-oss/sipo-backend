@@ -77,16 +77,11 @@ export class ObrasService {
 
   async update(id, obraData) {
     try {
-      const obra = new ObraModel({ ...obraData, id });
-      const validationErrors = obra.validate();
-      
-      if (validationErrors.length > 0) {
-        throw new Error(validationErrors.join(', '));
-      }
+      const obra = ({ ...obraData, id });
 
       const { data, error } = await supabase
         .from('obras')
-        .update(ObraModel.toDatabase(obra))
+        .update(obra)
         .eq('id', id)
         .select(`
           *,
