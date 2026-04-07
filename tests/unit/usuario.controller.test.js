@@ -2,20 +2,31 @@ const { UsuarioController } = require('../../src/controllers/usuario.controller.
 const { UsuarioService } = require('../../src/services/usuario.service.js');
 const bcrypt = require('bcrypt');
 
-// Mock del UsuarioService
+// Mock del UsuarioService completo
 jest.mock('../../src/services/usuario.service.js');
 
 describe('UsuarioController', () => {
   let usuarioController;
   let mockReq;
   let mockRes;
+  let mockUsuarioService;
 
   beforeEach(() => {
-    // Limpiar todos los mocks antes de cada test
-    jest.clearAllMocks();
+    // Restaurar todos los mocks
+    jest.restoreAllMocks();
     
-    // Crear instancia del controller
-    usuarioController = new UsuarioController();
+    // Crear mocks limpios para cada test
+    mockUsuarioService = {
+      create: jest.fn(),
+      login: jest.fn(),
+      getAll: jest.fn(),
+      getById: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn()
+    };
+
+    // Mock del constructor para que devuelva nuestro mock
+    UsuarioService.mockImplementation(() => mockUsuarioService);
     
     // Mock de request y response
     mockReq = {
@@ -27,6 +38,9 @@ describe('UsuarioController', () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis()
     };
+    
+    // Crear instancia del controller DESPUÉS del mock
+    usuarioController = new UsuarioController();
   });
 
   describe('register', () => {
@@ -59,13 +73,13 @@ describe('UsuarioController', () => {
         })
       };
 
-      UsuarioService.prototype.create = jest.fn().mockResolvedValue(mockUsuario);
+      mockUsuarioService.create.mockResolvedValue(mockUsuario);
 
       // Act
       await usuarioController.register(mockReq, mockRes);
 
       // Assert
-      expect(UsuarioService.prototype.create).toHaveBeenCalledWith({
+      expect(mockUsuarioService.create).toHaveBeenCalledWith({
         nombre: 'Juan',
         apellido: 'Pérez',
         correo: 'juan.perez@email.com',
@@ -89,7 +103,7 @@ describe('UsuarioController', () => {
       };
 
       const errorMessage = 'El apellido es requerido, El correo es requerido, La contraseña es requerida';
-      UsuarioService.prototype.create = jest.fn().mockRejectedValue(new Error(errorMessage));
+      mockUsuarioService.create.mockRejectedValue(new Error(errorMessage));
 
       // Act
       await usuarioController.register(mockReq, mockRes);
@@ -107,7 +121,7 @@ describe('UsuarioController', () => {
       mockReq.body = validUserData;
       
       const duplicateError = new Error('duplicate key value violates unique constraint "usuarios_correo_key"');
-      UsuarioService.prototype.create = jest.fn().mockRejectedValue(duplicateError);
+      mockUsuarioService.create.mockRejectedValue(duplicateError);
 
       // Act
       await usuarioController.register(mockReq, mockRes);
@@ -125,7 +139,7 @@ describe('UsuarioController', () => {
       mockReq.body = validUserData;
       
       const unexpectedError = new Error('Error inesperado en la base de datos');
-      UsuarioService.prototype.create = jest.fn().mockRejectedValue(unexpectedError);
+      mockUsuarioService.create.mockRejectedValue(unexpectedError);
 
       // Act
       await usuarioController.register(mockReq, mockRes);
@@ -146,7 +160,7 @@ describe('UsuarioController', () => {
       };
 
       const emailError = new Error('El formato del correo es inválido');
-      UsuarioService.prototype.create = jest.fn().mockRejectedValue(emailError);
+      mockUsuarioService.create.mockRejectedValue(emailError);
 
       // Act
       await usuarioController.register(mockReq, mockRes);
@@ -167,7 +181,7 @@ describe('UsuarioController', () => {
       };
 
       const roleError = new Error('El rol debe ser: arquitecto, ingeniero o residente');
-      UsuarioService.prototype.create = jest.fn().mockRejectedValue(roleError);
+      mockUsuarioService.create.mockRejectedValue(roleError);
 
       // Act
       await usuarioController.register(mockReq, mockRes);
@@ -210,13 +224,13 @@ describe('UsuarioController', () => {
         })
       };
 
-      UsuarioService.prototype.login = jest.fn().mockResolvedValue(mockUsuario);
+      mockUsuarioService.login.mockResolvedValue(mockUsuario);
 
       // Act
       await usuarioController.login(mockReq, mockRes);
 
       // Assert
-      expect(UsuarioService.prototype.login).toHaveBeenCalledWith(
+      expect(mockUsuarioService.login).toHaveBeenCalledWith(
         'juan.perez@email.com',
         'password123'
       );
@@ -233,7 +247,7 @@ describe('UsuarioController', () => {
       mockReq.body = validLoginData;
       
       const userNotFoundError = new Error('Usuario no encontrado');
-      UsuarioService.prototype.login = jest.fn().mockRejectedValue(userNotFoundError);
+      mockUsuarioService.login.mockRejectedValue(userNotFoundError);
 
       // Act
       await usuarioController.login(mockReq, mockRes);
@@ -251,7 +265,7 @@ describe('UsuarioController', () => {
       mockReq.body = validLoginData;
       
       const passwordError = new Error('Contraseña incorrecta');
-      UsuarioService.prototype.login = jest.fn().mockRejectedValue(passwordError);
+      mockUsuarioService.login.mockRejectedValue(passwordError);
 
       // Act
       await usuarioController.login(mockReq, mockRes);
@@ -269,7 +283,7 @@ describe('UsuarioController', () => {
       mockReq.body = validLoginData;
       
       const bcryptError = new Error('data and hash arguments required');
-      UsuarioService.prototype.login = jest.fn().mockRejectedValue(bcryptError);
+      mockUsuarioService.login.mockRejectedValue(bcryptError);
 
       // Act
       await usuarioController.login(mockReq, mockRes);
