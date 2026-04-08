@@ -38,9 +38,9 @@ export class UsuarioController {
   // POST /api/usuarios/login - LOGIN
   login = async (req, res) => {
     try {
-      const { correo, password_hash } = req.body;
+      const { correo, password } = req.body;
       
-      const usuario = await this.usuarioService.login(correo, password_hash);
+      const usuario = await this.usuarioService.login(correo, password);
       
       res.json({
         success: true,
