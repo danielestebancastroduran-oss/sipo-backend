@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { AiuConfigModel } from '../models/aiu_config.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class AiuConfigService {
   async getAll() {
@@ -40,6 +41,11 @@ export class AiuConfigService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!aiuConfig.id) {
+        aiuConfig.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('aiu_config')
         .insert([AiuConfigModel.toDatabase(aiuConfig)])
@@ -66,11 +72,10 @@ export class AiuConfigService {
         .from('aiu_config')
         .update(AiuConfigModel.toDatabase(aiuConfig))
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar configuración AIU: ${error.message}`);
     }

@@ -29,7 +29,7 @@ app.use(cors());
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/obras", obrasRoutes);
 app.use("/api/partidas", partidasRoutes);
-app.use("/api/apu-detalles", apuDetalleRoutes);
+app.use("/api/apu-detalle", apuDetalleRoutes);
 app.use("/api/clientes", clienteRoutes);
 app.use("/api/recursos", recursosRoutes);
 app.use("/api/cuadrillas", cuadrillasRoutes);

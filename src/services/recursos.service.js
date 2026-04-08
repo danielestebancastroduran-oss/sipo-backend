@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { RecursoModel } from '../models/recursos.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class RecursosService {
   async getAll() {
@@ -40,6 +41,11 @@ export class RecursosService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!recurso.id) {
+        recurso.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('recursos')
         .insert([RecursoModel.toDatabase(recurso)])
@@ -66,11 +72,10 @@ export class RecursosService {
         .from('recursos')
         .update(RecursoModel.toDatabase(recurso))
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data[0]; // Devolver el primer elemento del array
     } catch (error) {
       throw new Error(`Error al actualizar recurso: ${error.message}`);
     }

@@ -34,12 +34,13 @@ export class ApuDetalleModel {
       errors.push('El ID de la partida es requerido');
     }
     
-    if (!this.recurso_id) {
-      errors.push('El ID del recurso es requerido');
+    // Requerir al menos uno de los dos, pero no ambos
+    if (!this.recurso_id && !this.cuadrilla_id) {
+      errors.push('Debe especificar un ID de recurso o un ID de cuadrilla');
     }
     
-    if (!this.cuadrilla_id) {
-      errors.push('El ID de la cuadrilla es requerido');
+    if (this.recurso_id && this.cuadrilla_id) {
+      errors.push('No puede especificar ambos: recurso_id y cuadrilla_id');
     }
     
     if (this.cantidad <= 0) {

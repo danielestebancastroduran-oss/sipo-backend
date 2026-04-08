@@ -60,7 +60,7 @@ export class ClienteService {
 
   async update(id, clienteData) {
     try {
-      const cliente = new ClienteModel({ ...clienteData, id });
+      const cliente = new ClienteModel(clienteData);
       const validationErrors = cliente.validate();
       
       if (validationErrors.length > 0) {
@@ -71,11 +71,10 @@ export class ClienteService {
         .from('cliente')
         .update(ClienteModel.toDatabase(cliente))
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data[0]; // Devolver el primer elemento del array
     } catch (error) {
       throw new Error(`Error al actualizar cliente: ${error.message}`);
     }

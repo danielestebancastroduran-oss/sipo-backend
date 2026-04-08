@@ -1,16 +1,17 @@
 import { supabase } from '../config/db.js';
 import { ApuDetalleModel } from '../models/apu_detalle.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ApuDetalleService {
   async getAll() {
     try {
       const { data, error } = await supabase
-        .from('apu_detalles')
+        .from('apu_detalle')
         .select(`
           *,
           partidas (nombre, descripcion),
           recursos (nombre, unidad, tipo, precio_unitario),
-          cuadrillas (nombre, descripcion)
+          cuadrillas (nombre)
         `)
         .order('created_at', { ascending: false });
 
@@ -24,12 +25,12 @@ export class ApuDetalleService {
   async getById(id) {
     try {
       const { data, error } = await supabase
-        .from('apu_detalles')
+        .from('apu_detalle')
         .select(`
           *,
           partidas (nombre, descripcion, obra_id),
           recursos (nombre, unidad, tipo, precio_unitario),
-          cuadrillas (nombre, descripcion)
+          cuadrillas (nombre)
         `)
         .eq('id', id)
         .single();
@@ -50,14 +51,19 @@ export class ApuDetalleService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!detalle.id) {
+        detalle.id = uuidv4();
+      }
+
       const { data, error } = await supabase
-        .from('apu_detalles')
+        .from('apu_detalle')
         .insert([ApuDetalleModel.toDatabase(detalle)])
         .select(`
           *,
           partidas (nombre, descripcion),
           recursos (nombre, unidad, tipo, precio_unitario),
-          cuadrillas (nombre, descripcion)
+          cuadrillas (nombre)
         `)
         .single();
 
@@ -78,19 +84,18 @@ export class ApuDetalleService {
       }
 
       const { data, error } = await supabase
-        .from('apu_detalles')
+        .from('apu_detalle')
         .update(ApuDetalleModel.toDatabase(detalle))
         .eq('id', id)
         .select(`
           *,
           partidas (nombre, descripcion),
           recursos (nombre, unidad, tipo, precio_unitario),
-          cuadrillas (nombre, descripcion)
-        `)
-        .single();
+          cuadrillas (nombre)
+        `);
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar detalle APU: ${error.message}`);
     }
@@ -99,7 +104,7 @@ export class ApuDetalleService {
   async delete(id) {
     try {
       const { error } = await supabase
-        .from('apu_detalles')
+        .from('apu_detalle')
         .delete()
         .eq('id', id);
 
@@ -113,11 +118,11 @@ export class ApuDetalleService {
   async getByPartida(partida_id) {
     try {
       const { data, error } = await supabase
-        .from('apu_detalles')
+        .from('apu_detalle')
         .select(`
           *,
           recursos (nombre, unidad, tipo, precio_unitario),
-          cuadrillas (nombre, descripcion)
+          cuadrillas (nombre)
         `)
         .eq('partida_id', partida_id)
         .order('created_at', { ascending: false });
@@ -132,11 +137,11 @@ export class ApuDetalleService {
   async getByRecurso(recurso_id) {
     try {
       const { data, error } = await supabase
-        .from('apu_detalles')
+        .from('apu_detalle')
         .select(`
           *,
           partidas (nombre, descripcion, obra_id),
-          cuadrillas (nombre, descripcion)
+          cuadrillas (nombre)
         `)
         .eq('recurso_id', recurso_id)
         .order('created_at', { ascending: false });
@@ -151,7 +156,7 @@ export class ApuDetalleService {
   async getByCuadrilla(cuadrilla_id) {
     try {
       const { data, error } = await supabase
-        .from('apu_detalles')
+        .from('apu_detalle')
         .select(`
           *,
           partidas (nombre, descripcion, obra_id),
@@ -171,6 +176,12 @@ export class ApuDetalleService {
     try {
       const detalles = detallesData.map(detalleData => {
         const detalle = new ApuDetalleModel(detalleData);
+        
+        // Generar UUID si no existe
+        if (!detalle.id) {
+          detalle.id = uuidv4();
+        }
+        
         const validationErrors = detalle.validate();
         
         if (validationErrors.length > 0) {
@@ -181,13 +192,13 @@ export class ApuDetalleService {
       });
 
       const { data, error } = await supabase
-        .from('apu_detalles')
+        .from('apu_detalle')
         .insert(detalles)
         .select(`
           *,
           partidas (nombre, descripcion),
           recursos (nombre, unidad, tipo, precio_unitario),
-          cuadrillas (nombre, descripcion)
+          cuadrillas (nombre)
         `);
 
       if (error) throw error;
@@ -239,12 +250,12 @@ export class ApuDetalleService {
   async getByObra(obra_id) {
     try {
       const { data, error } = await supabase
-        .from('apu_detalles')
+        .from('apu_detalle')
         .select(`
           *,
           partidas (nombre, descripcion),
           recursos (nombre, unidad, tipo, precio_unitario),
-          cuadrillas (nombre, descripcion)
+          cuadrillas (nombre)
         `)
         .eq('partidas.obra_id', obra_id)
         .order('created_at', { ascending: false });

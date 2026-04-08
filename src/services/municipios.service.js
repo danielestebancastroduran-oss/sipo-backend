@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { MunicipioModel } from '../models/municipios.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class MunicipiosService {
   async getAll() {
@@ -46,6 +47,11 @@ export class MunicipiosService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!municipio.id) {
+        municipio.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('municipios')
         .insert([MunicipioModel.toDatabase(municipio)])
@@ -78,11 +84,10 @@ export class MunicipiosService {
         .select(`
           *,
           departamentos (nombre, codigo_dane)
-        `)
-        .single();
+        `);
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar municipio: ${error.message}`);
     }

@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { CuadrillaModel } from '../models/cuadrillas.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class CuadrillasService {
   async getAll() {
@@ -40,6 +41,11 @@ export class CuadrillasService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!cuadrilla.id) {
+        cuadrilla.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('cuadrillas')
         .insert([CuadrillaModel.toDatabase(cuadrilla)])
@@ -66,11 +72,10 @@ export class CuadrillasService {
         .from('cuadrillas')
         .update(CuadrillaModel.toDatabase(cuadrilla))
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar cuadrilla: ${error.message}`);
     }

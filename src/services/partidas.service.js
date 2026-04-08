@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { PartidaModel } from '../models/partidas.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class PartidasService {
   async getAll() {
@@ -46,6 +47,11 @@ export class PartidasService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!partida.id) {
+        partida.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('partidas')
         .insert([PartidaModel.toDatabase(partida)])
@@ -78,11 +84,10 @@ export class PartidasService {
         .select(`
           *,
           obras (nombre, descripcion, estado)
-        `)
-        .single();
+        `);
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar partida: ${error.message}`);
     }
@@ -108,31 +113,12 @@ export class PartidasService {
         .from('partidas')
         .select(`
           *,
-          apu_detalles (
-            id,
-            cantidad,
-            precio_unitario,
-            rendimiento,
-            recursos (nombre, unidad, tipo),
-            cuadrillas (nombre)
-          )
+          obras (nombre, descripcion, estado)
         `)
         .eq('obra_id', obra_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
-      // Calcular subtotales para cada partida
-      if (data) {
-        data.forEach(partida => {
-          if (partida.apu_detalles) {
-            partida.subtotal = partida.apu_detalles.reduce((sum, detalle) => 
-              sum + (detalle.cantidad * detalle.precio_unitario), 0);
-          } else {
-            partida.subtotal = 0;
-          }
-        });
-      }
       
       return data;
     } catch (error) {
@@ -146,37 +132,12 @@ export class PartidasService {
         .from('partidas')
         .select(`
           *,
-          obras (nombre, descripcion, estado),
-          apu_detalles (
-            id,
-            cantidad,
-            precio_unitario,
-            rendimiento,
-            recursos (nombre, unidad, tipo, precio_unitario),
-            cuadrillas (nombre, descripcion)
-          )
+          obras (nombre, descripcion, estado)
         `)
         .eq('id', id)
         .single();
 
       if (error) throw error;
-      
-      // Calcular totales
-      if (data && data.apu_detalles) {
-        data.total_materiales = data.apu_detalles
-          .filter(detalle => detalle.recursos?.tipo === 'material')
-          .reduce((sum, detalle) => sum + (detalle.cantidad * detalle.precio_unitario), 0);
-        
-        data.total_herramientas = data.apu_detalles
-          .filter(detalle => detalle.recursos?.tipo === 'herramienta')
-          .reduce((sum, detalle) => sum + (detalle.cantidad * detalle.precio_unitario), 0);
-        
-        data.total_equipos = data.apu_detalles
-          .filter(detalle => detalle.recursos?.tipo === 'equipo')
-          .reduce((sum, detalle) => sum + (detalle.cantidad * detalle.precio_unitario), 0);
-        
-        data.total_general = data.total_materiales + data.total_herramientas + data.total_equipos;
-      }
       
       return data;
     } catch (error) {

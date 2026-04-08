@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { TrabajadorModel } from '../models/trabajador.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class TrabajadorService {
   async getAll() {
@@ -40,6 +41,11 @@ export class TrabajadorService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!trabajador.id) {
+        trabajador.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('trabajador')
         .insert([TrabajadorModel.toDatabase(trabajador)])
@@ -66,11 +72,10 @@ export class TrabajadorService {
         .from('trabajador')
         .update(TrabajadorModel.toDatabase(trabajador))
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar trabajador: ${error.message}`);
     }
@@ -87,6 +92,21 @@ export class TrabajadorService {
       return true;
     } catch (error) {
       throw new Error(`Error al eliminar trabajador: ${error.message}`);
+    }
+  }
+
+  async getByCargo(cargo) {
+    try {
+      const { data, error } = await supabase
+        .from('trabajador')
+        .select('*')
+        .eq('cargo', cargo)
+        .order('nombre', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      throw new Error(`Error al obtener trabajadores por cargo: ${error.message}`);
     }
   }
 
@@ -121,12 +141,11 @@ export class TrabajadorService {
     }
   }
 
-  async getByCargo(usuario_id, cargo) {
+  async getByCargo(cargo) {
     try {
       const { data, error } = await supabase
         .from('trabajador')
         .select('*')
-        .eq('usuario_id', usuario_id)
         .eq('cargo', cargo)
         .order('nombre', { ascending: true });
 

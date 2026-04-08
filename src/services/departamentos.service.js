@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { DepartamentoModel } from '../models/departamentos.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class DepartamentosService {
   async getAll() {
@@ -40,6 +41,11 @@ export class DepartamentosService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!departamento.id) {
+        departamento.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('departamentos')
         .insert([DepartamentoModel.toDatabase(departamento)])
@@ -66,11 +72,10 @@ export class DepartamentosService {
         .from('departamentos')
         .update(DepartamentoModel.toDatabase(departamento))
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar departamento: ${error.message}`);
     }

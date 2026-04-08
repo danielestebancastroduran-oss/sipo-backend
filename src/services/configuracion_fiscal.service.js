@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { ConfiguracionFiscalModel } from '../models/configuracion_fiscal.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ConfiguracionFiscalService {
   async getAll() {
@@ -40,6 +41,11 @@ export class ConfiguracionFiscalService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!configuracion.id) {
+        configuracion.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('configuracion_fiscal')
         .insert([ConfiguracionFiscalModel.toDatabase(configuracion)])
@@ -66,11 +72,10 @@ export class ConfiguracionFiscalService {
         .from('configuracion_fiscal')
         .update(ConfiguracionFiscalModel.toDatabase(configuracion))
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar configuración fiscal: ${error.message}`);
     }

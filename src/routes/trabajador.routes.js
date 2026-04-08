@@ -13,6 +13,7 @@ router.delete('/:id', trabajadorController.delete);
 
 // 🔹 RUTAS ADICIONALES
 router.get('/usuario/:usuario_id', trabajadorController.getByUsuario);
+router.get('/cargo/:cargo', trabajadorController.getByCargo);
 router.get('/identificacion/:identificacion', trabajadorController.getByIdentificacion);
 router.get('/usuario/:usuario_id/cargo/:cargo', trabajadorController.getByCargo);
 router.get('/search/:searchTerm', trabajadorController.searchByNombre);
