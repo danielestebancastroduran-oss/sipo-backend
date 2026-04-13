@@ -6,8 +6,8 @@ export class UsuarioModel {
     this.correo = data.correo || '';
     this.password_hash = data.password_hash || '';
     this.rol = data.rol || 'usuario';
-    this.created_at = data.fecha_creacion || new Date();
-    
+    this.created_at = data.created_at || new Date();
+
     // Guardar password temporal si viene en texto plano
     this._password = data.password || null;
   }
@@ -17,7 +17,7 @@ export class UsuarioModel {
     if (!data) {
       throw new Error('Datos de usuario no proporcionados');
     }
-    
+
     return new UsuarioModel({
       id: data.id,
       nombre: data.nombre || '',
@@ -25,7 +25,7 @@ export class UsuarioModel {
       correo: data.correo || '',
       password_hash: data.password_hash || '',
       rol: data.rol || 'usuario',
-      created_at: data.created_at || data.fecha_creacion
+      created_at: data.created_at
     });
   }
 
@@ -37,37 +37,35 @@ export class UsuarioModel {
       apellido: usuario.apellido,
       correo: usuario.correo,
       password_hash: usuario.password_hash,
-      rol: usuario.rol,
-     
-      created_at: usuario.created_at
+      rol: usuario.rol
     };
   }
 
   // Método para validar datos del usuario
   validate() {
     const errors = [];
-    
+
     if (!this.nombre || this.nombre.trim() === '') {
       errors.push('El nombre es requerido');
     }
-    
+
     if (!this.apellido || this.apellido.trim() === '') {
       errors.push('El apellido es requerido');
     }
-    
+
     if (!this.correo || this.correo.trim() === '') {
       errors.push('El correo es requerido');
     } else if (!this.isValidEmail(this.correo)) {
       errors.push('El formato del correo es inválido');
     }
-    
+
     // No validar contraseña aquí, el service se encarga de encriptarla
-    
-    const rolesValidos = ['arquitecto', 'ingeniero', 'residente'];
+
+    const rolesValidos = ['admin', 'arquitecto', 'ingeniero', 'residente', 'usuario'];
     if (this.rol && !rolesValidos.includes(this.rol)) {
-      errors.push('El rol debe ser: arquitecto, ingeniero o residente');
+      errors.push('El rol debe ser: admin, arquitecto, ingeniero, residente o usuario');
     }
-    
+
     return errors;
   }
 

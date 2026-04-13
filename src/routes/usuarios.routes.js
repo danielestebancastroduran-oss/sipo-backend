@@ -1,25 +1,25 @@
 import express from "express";
 import { UsuarioController } from "../controllers/usuario.controller.js";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 const usuarioController = new UsuarioController();
 
-// 🔹 REGISTRAR USUARIO
+// 🔓 RUTAS PÚBLICAS (sin autenticación)
 router.post("/", usuarioController.register);
-
-// 🔹 LOGIN (verificar contraseña)
 router.post("/login", usuarioController.login);
 
-// 🔹 OBTENER USUARIOS
-router.get("/", usuarioController.getAll);
+// 🔒 RUTAS PROTEGIDAS (requieren autenticación)
+// Rutas específicas ANTES de /:id para evitar conflictos
+router.get("/rol/:rol", authMiddleware, usuarioController.getByRol);
+router.get("/activos", authMiddleware, usuarioController.getActivos);
+router.get("/search/:searchTerm", authMiddleware, usuarioController.searchByNombre);
 
-// 🔹 RUTAS ADICIONALES
-router.get("/:id", usuarioController.getById);
-router.put("/:id", usuarioController.update);
-router.delete("/:id", usuarioController.delete);
-router.get("/rol/:rol", usuarioController.getByRol);
-router.get("/activos", usuarioController.getActivos);
-router.get("/search/:searchTerm", usuarioController.searchByNombre);
-router.put("/:id/ultimo-acceso", usuarioController.updateUltimoAcceso);
+// CRUD general
+router.get("/", authMiddleware, usuarioController.getAll);
+router.get("/:id", authMiddleware, usuarioController.getById);
+router.put("/:id", authMiddleware, usuarioController.update);
+router.delete("/:id", authMiddleware, usuarioController.delete);
+router.put("/:id/ultimo-acceso", authMiddleware, usuarioController.updateUltimoAcceso);
 
 export default router;

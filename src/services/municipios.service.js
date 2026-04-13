@@ -1,5 +1,12 @@
 import { supabase } from '../config/db.js';
 import { MunicipioModel } from '../models/municipios.model.js';
+import { v4 as uuidv4 } from 'uuid';
+
+// Función para sanitizar input de búsquedas ilike
+function sanitizeSearchTerm(term) {
+  if (!term || typeof term !== 'string') return '';
+  return term.replace(/[%_\\]/g, '\\$&');
+}
 
 export class MunicipiosService {
   async getAll() {
@@ -46,6 +53,11 @@ export class MunicipiosService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!municipio.id) {
+        municipio.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('municipios')
         .insert([MunicipioModel.toDatabase(municipio)])
@@ -78,11 +90,10 @@ export class MunicipiosService {
         .select(`
           *,
           departamentos (nombre, codigo_dane)
-        `)
-        .single();
+        `);
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar municipio: ${error.message}`);
     }
@@ -90,6 +101,10 @@ export class MunicipiosService {
 
   async delete(id) {
     try {
+      // Verificar que el municipio existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('municipios')
         .delete()
@@ -156,13 +171,14 @@ export class MunicipiosService {
 
   async searchByNombre(searchTerm, departamento_id = null) {
     try {
+      const sanitized = sanitizeSearchTerm(searchTerm);
       let query = supabase
         .from('municipios')
         .select(`
           *,
           departamentos (nombre, codigo_dane)
         `)
-        .ilike('nombre', `%${searchTerm}%`);
+        .ilike('nombre', `%${sanitized}%`);
 
       if (departamento_id) {
         query = query.eq('departamento_id', departamento_id);

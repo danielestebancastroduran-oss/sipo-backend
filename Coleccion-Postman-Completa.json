@@ -1,0 +1,405 @@
+{
+	"info": {
+		"_postman_id": "sipocompleta-2024",
+		"name": "SIPO Backend API - Completa",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 AUTENTICACIÓN - Usuarios",
+			"item": [
+				{
+					"name": "📝 Login Usuario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"correo\": \"maria.garcia@email.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/usuarios/login",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "usuarios", "login"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.token) {",
+									"        pm.environment.set('token', jsonData.data.token);",
+									"        pm.collectionVariables.set('token', jsonData.data.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "👤 Registrar Usuario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"correo\": \"juan.perez@email.com\",\n  \"password\": \"password123\",\n  \"rol\": \"arquitecto\"\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/usuarios",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "usuarios"]
+						}
+					}
+				},
+				{
+					"name": "👥 Obtener Todos los Usuarios",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/usuarios",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "usuarios"]
+						}
+					}
+				},
+				{
+					"name": "👤 Obtener Usuario por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/usuarios/{{userId}}",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "usuarios", "{{userId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🏗️ OBRAS",
+			"item": [
+				{
+					"name": "📋 Obtener Todas las Obras",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/obras",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "obras"]
+						}
+					}
+				},
+				{
+					"name": "➕ Crear Obra",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Obra Test\",\n  \"descripcion\": \"Descripción de prueba\",\n  \"estado\": \"activo\",\n  \"usuario_id\": \"{{userId}}\",\n  \"cliente_id\": \"cliente-id-here\"\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/obras",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "obras"]
+						}
+					}
+				},
+				{
+					"name": "📄 Obtener Obra por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/obras/{{obraId}}",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "obras", "{{obraId}}"]
+						}
+					}
+				},
+				{
+					"name": "🔄 Actualizar Obra",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Obra Actualizada\",\n  \"descripcion\": \"Descripción actualizada\"\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/obras/{{obraId}}",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "obras", "{{obraId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👥 CLIENTES",
+			"item": [
+				{
+					"name": "📋 Obtener Todos los Clientes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/clientes",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "clientes"]
+						}
+					}
+				},
+				{
+					"name": "➕ Crear Cliente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Cliente Test\",\n  \"nit\": \"123456789\",\n  \"direccion\": \"Dirección de prueba\",\n  \"telefono\": \"123456789\",\n  \"usuario_id\": \"{{userId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/clientes",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "clientes"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔧 RECURSOS",
+			"item": [
+				{
+					"name": "📋 Obtener Todos los Recursos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/recursos",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "recursos"]
+						}
+					}
+				},
+				{
+					"name": "➕ Crear Recurso",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Cemento\",\n  \"tipo\": \"material\",\n  \"unidad\": \"saco\",\n  \"precio_unitario\": 150000,\n  \"usuario_id\": \"{{userId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/recursos",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "recursos"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👷 CUADRILLAS",
+			"item": [
+				{
+					"name": "📋 Obtener Todas las Cuadrillas",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/cuadrillas",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "cuadrillas"]
+						}
+					}
+				},
+				{
+					"name": "➕ Crear Cuadrilla",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Cuadrilla A\",\n  \"especialidad\": \"Albañilería\",\n  \"usuario_id\": \"{{userId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/cuadrillas",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "cuadrillas"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👷 TRABAJADORES",
+			"item": [
+				{
+					"name": "📋 Obtener Todos los Trabajadores",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/api/trabajadores",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "trabajadores"]
+						}
+					}
+				},
+				{
+					"name": "➕ Crear Trabajador",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Trabajador Test\",\n  \"identificacion\": \"123456789\",\n  \"cargo\": \"oficial\",\n  \"salario\": 1500000,\n  \"usuario_id\": \"{{userId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/trabajadores",
+							"host": ["{{baseURL}}"],
+							"path": ["api", "trabajadores"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "test",
+			"script": {
+				"exec": [
+					"if (pm.response.code === 200) {",
+					"    const jsonData = pm.response.json();",
+					"    if (jsonData.success && jsonData.data && jsonData.data.token) {",
+					"        pm.environment.set('token', jsonData.data.token);",
+					"        pm.collectionVariables.set('token', jsonData.data.token);",
+					"    }",
+					"}"
+				],
+				"type": "text/javascript"
+			}
+		}
+	]
+}

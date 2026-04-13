@@ -1,20 +1,21 @@
 import express from 'express';
 import { CuadrillasController } from '../controllers/cuadrillas.controller.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 const cuadrillasController = new CuadrillasController();
 
-// 🔹 CRUD BÁSICO
-router.get('/', cuadrillasController.getAll);
-router.get('/:id', cuadrillasController.getById);
-router.post('/', cuadrillasController.create);
-router.put('/:id', cuadrillasController.update);
-router.delete('/:id', cuadrillasController.delete);
+// 🔒 Rutas específicas ANTES de /:id
+router.get('/usuario/:usuario_id', authMiddleware, cuadrillasController.getByUsuario);
+router.get('/search/:searchTerm', authMiddleware, cuadrillasController.searchByNombre);
 
-// 🔹 RUTAS ADICIONALES
-router.get('/usuario/:usuario_id', cuadrillasController.getByUsuario);
-router.get('/:id/trabajadores', cuadrillasController.getWithTrabajadores);
-router.get('/:id/usage', cuadrillasController.getWithUsage);
-router.get('/search/:searchTerm', cuadrillasController.searchByNombre);
+// CRUD BÁSICO
+router.get('/', authMiddleware, cuadrillasController.getAll);
+router.post('/', authMiddleware, cuadrillasController.create);
+router.get('/:id', authMiddleware, cuadrillasController.getById);
+router.put('/:id', authMiddleware, cuadrillasController.update);
+router.delete('/:id', authMiddleware, cuadrillasController.delete);
+router.get('/:id/trabajadores', authMiddleware, cuadrillasController.getWithTrabajadores);
+router.get('/:id/usage', authMiddleware, cuadrillasController.getWithUsage);
 
 export default router;

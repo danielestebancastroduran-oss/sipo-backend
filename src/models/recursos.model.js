@@ -5,7 +5,7 @@ export class RecursoModel {
     this.nombre = data.nombre || '';
     this.tipo = data.tipo || 'material';
     this.unidad = data.unidad || '';
-    this.precio_unitario = data.precio_unitario || 0;
+    this.precio_unitario = data.precio_unitario ?? 0;
     this.created_at = data.created_at || new Date();
   }
 
@@ -20,8 +20,7 @@ export class RecursoModel {
       nombre: recurso.nombre,
       tipo: recurso.tipo,
       unidad: recurso.unidad,
-      precio_unitario: recurso.precio_unitario,
-      created_at: recurso.created_at
+      precio_unitario: recurso.precio_unitario
     };
   }
 

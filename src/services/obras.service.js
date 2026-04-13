@@ -89,11 +89,10 @@ export class ObrasService {
           cliente (nombre, nit, telefono, correo),
           departamentos (nombre, codigo_dane),
           municipios (nombre, codigo_dane)
-        `)
-        .single();
+        `);
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar obra: ${error.message}`);
     }
@@ -101,6 +100,10 @@ export class ObrasService {
 
   async delete(id) {
     try {
+      // Verificar que la obra existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('obras')
         .delete()

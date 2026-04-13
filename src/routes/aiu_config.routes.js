@@ -1,20 +1,21 @@
 import express from 'express';
 import { AiuConfigController } from '../controllers/aiu_config.controller.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 const aiuConfigController = new AiuConfigController();
 
-// 🔹 CRUD BÁSICO
-router.get('/', aiuConfigController.getAll);
-router.get('/:id', aiuConfigController.getById);
-router.post('/', aiuConfigController.create);
-router.put('/:id', aiuConfigController.update);
-router.delete('/:id', aiuConfigController.delete);
+// 🔒 Rutas específicas ANTES de /:id
+router.get('/default', authMiddleware, aiuConfigController.getDefaultConfig);
+router.get('/usuario/:usuario_id', authMiddleware, aiuConfigController.getByUsuario);
+router.put('/usuario/:usuario_id', authMiddleware, aiuConfigController.upsertByUsuario);
+router.post('/calculate/:usuario_id', authMiddleware, aiuConfigController.calculateAiu);
 
-// 🔹 RUTAS ADICIONALES
-router.get('/usuario/:usuario_id', aiuConfigController.getByUsuario);
-router.put('/usuario/:usuario_id', aiuConfigController.upsertByUsuario);
-router.post('/calculate/:usuario_id', aiuConfigController.calculateAiu);
-router.get('/default', aiuConfigController.getDefaultConfig);
+// CRUD BÁSICO
+router.get('/', authMiddleware, aiuConfigController.getAll);
+router.post('/', authMiddleware, aiuConfigController.create);
+router.get('/:id', authMiddleware, aiuConfigController.getById);
+router.put('/:id', authMiddleware, aiuConfigController.update);
+router.delete('/:id', authMiddleware, aiuConfigController.delete);
 
 export default router;

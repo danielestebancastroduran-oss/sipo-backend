@@ -3,7 +3,7 @@ export class MunicipioModel {
     this.id = data.id || null;
     this.departamento_id = data.departamento_id || null;
     this.nombre = data.nombre || '';
-    this.es_capital = data.es_capital || false;
+    this.es_capital = data.es_capital ?? false;
     this.codigo_dane = data.codigo_dane || '';
   }
 

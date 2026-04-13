@@ -141,6 +141,26 @@ export class TrabajadorController {
     }
   };
 
+  // GET /api/trabajadores/cargo/:cargo
+  getByCargo = async (req, res) => {
+    try {
+      const { cargo } = req.params;
+      const trabajadores = await this.trabajadorService.getByCargo(cargo);
+      
+      res.json({
+        success: true,
+        data: trabajadores,
+        message: 'Trabajadores por cargo obtenidos correctamente'
+      });
+    } catch (error) {
+      console.error('Error en getByCargo trabajadores:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Error al obtener los trabajadores por cargo'
+      });
+    }
+  };
+
   // GET /api/trabajadores/identificacion/:identificacion
   getByIdentificacion = async (req, res) => {
     try {

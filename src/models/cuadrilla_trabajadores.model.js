@@ -16,8 +16,7 @@ export class CuadrillaTrabajadorModel {
       id: cuadrillaTrabajador.id,
       cuadrilla_id: cuadrillaTrabajador.cuadrilla_id,
       trabajador_id: cuadrillaTrabajador.trabajador_id,
-      cantidad: cuadrillaTrabajador.cantidad,
-      created_at: cuadrillaTrabajador.created_at
+      cantidad: cuadrillaTrabajador.cantidad
     };
   }
 
