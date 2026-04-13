@@ -2,6 +2,12 @@ import { supabase } from '../config/db.js';
 import { TrabajadorModel } from '../models/trabajador.model.js';
 import { v4 as uuidv4 } from 'uuid';
 
+// Función para sanitizar input de búsquedas ilike
+function sanitizeSearchTerm(term) {
+  if (!term || typeof term !== 'string') return '';
+  return term.replace(/[%_\\]/g, '\\$&');
+}
+
 export class TrabajadorService {
   async getAll() {
     try {
@@ -83,6 +89,10 @@ export class TrabajadorService {
 
   async delete(id) {
     try {
+      // Verificar que el trabajador existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('trabajador')
         .delete()
@@ -141,28 +151,14 @@ export class TrabajadorService {
     }
   }
 
-  async getByCargo(cargo) {
-    try {
-      const { data, error } = await supabase
-        .from('trabajador')
-        .select('*')
-        .eq('cargo', cargo)
-        .order('nombre', { ascending: true });
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      throw new Error(`Error al obtener trabajadores por cargo: ${error.message}`);
-    }
-  }
-
   async searchByNombre(usuario_id, searchTerm) {
     try {
+      const sanitized = sanitizeSearchTerm(searchTerm);
       const { data, error } = await supabase
         .from('trabajador')
         .select('*')
         .eq('usuario_id', usuario_id)
-        .ilike('nombre', `%${searchTerm}%`)
+        .ilike('nombre', `%${sanitized}%`)
         .order('nombre', { ascending: true });
 
       if (error) throw error;

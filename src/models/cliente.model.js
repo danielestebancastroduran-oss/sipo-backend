@@ -22,8 +22,7 @@ export class ClienteModel {
       nit: cliente.nit,
       telefono: cliente.telefono,
       direccion: cliente.direccion,
-      correo: cliente.correo,
-      created_at: cliente.created_at
+      correo: cliente.correo
     };
   }
 

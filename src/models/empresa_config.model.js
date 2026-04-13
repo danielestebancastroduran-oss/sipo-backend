@@ -28,8 +28,7 @@ export class EmpresaConfigModel {
       direccion: empresaConfig.direccion,
       departamento_id: empresaConfig.departamento_id,
       municipio_id: empresaConfig.municipio_id,
-      logo_url: empresaConfig.logo_url,
-      created_at: empresaConfig.created_at
+      logo_url: empresaConfig.logo_url
     };
   }
 

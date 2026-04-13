@@ -103,6 +103,10 @@ export class ApuDetalleService {
 
   async delete(id) {
     try {
+      // Verificar que el detalle existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('apu_detalle')
         .delete()
@@ -249,6 +253,20 @@ export class ApuDetalleService {
 
   async getByObra(obra_id) {
     try {
+      // Primero obtener los IDs de partidas de la obra
+      const { data: partidas, error: partidasError } = await supabase
+        .from('partidas')
+        .select('id')
+        .eq('obra_id', obra_id);
+
+      if (partidasError) throw partidasError;
+
+      if (!partidas || partidas.length === 0) {
+        return [];
+      }
+
+      const partidaIds = partidas.map(p => p.id);
+
       const { data, error } = await supabase
         .from('apu_detalle')
         .select(`
@@ -257,7 +275,7 @@ export class ApuDetalleService {
           recursos (nombre, unidad, tipo, precio_unitario),
           cuadrillas (nombre)
         `)
-        .eq('partidas.obra_id', obra_id)
+        .in('partida_id', partidaIds)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

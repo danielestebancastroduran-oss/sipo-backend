@@ -100,6 +100,10 @@ export class ObrasService {
 
   async delete(id) {
     try {
+      // Verificar que la obra existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('obras')
         .delete()

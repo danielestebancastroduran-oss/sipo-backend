@@ -2,6 +2,12 @@ import { supabase } from '../config/db.js';
 import { ClienteModel } from '../models/cliente.model.js';
 import { v4 as uuidv4 } from 'uuid';
 
+// Función para sanitizar input de búsquedas ilike
+function sanitizeSearchTerm(term) {
+  if (!term || typeof term !== 'string') return '';
+  return term.replace(/[%_\\]/g, '\\$&');
+}
+
 export class ClienteService {
   async getAll() {
     try {
@@ -82,6 +88,10 @@ export class ClienteService {
 
   async delete(id) {
     try {
+      // Verificar que el cliente existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('cliente')
         .delete()
@@ -126,11 +136,12 @@ export class ClienteService {
 
   async searchByNombre(usuario_id, searchTerm) {
     try {
+      const sanitized = sanitizeSearchTerm(searchTerm);
       const { data, error } = await supabase
         .from('cliente')
         .select('*')
         .eq('usuario_id', usuario_id)
-        .ilike('nombre', `%${searchTerm}%`)
+        .ilike('nombre', `%${sanitized}%`)
         .order('nombre', { ascending: true });
 
       if (error) throw error;

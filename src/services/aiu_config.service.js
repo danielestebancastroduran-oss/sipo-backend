@@ -83,6 +83,10 @@ export class AiuConfigService {
 
   async delete(id) {
     try {
+      // Verificar que la configuración existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('aiu_config')
         .delete()

@@ -16,8 +16,7 @@ export class CuadrillaModel {
       id: cuadrilla.id,
       usuario_id: cuadrilla.usuario_id,
       nombre: cuadrilla.nombre,
-      rendimiento_base: cuadrilla.rendimiento_base,
-      created_at: cuadrilla.created_at
+      rendimiento_base: cuadrilla.rendimiento_base
     };
   }
 

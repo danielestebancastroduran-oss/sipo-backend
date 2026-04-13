@@ -24,8 +24,7 @@ export class PreferenciasPdfModel {
       incluir_apu: preferencias.incluir_apu,
       incluir_desglose_admin: preferencias.incluir_desglose_admin,
       mostrar_datos_cliente: preferencias.mostrar_datos_cliente,
-      incluir_retenciones: preferencias.incluir_retenciones,
-      created_at: preferencias.created_at
+      incluir_retenciones: preferencias.incluir_retenciones
     };
   }
 

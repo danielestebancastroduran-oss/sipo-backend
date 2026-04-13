@@ -1,21 +1,22 @@
 import express from 'express';
 import { ObrasController } from '../controllers/obras.controller.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 const obrasController = new ObrasController();
 
-// 🔹 CRUD BÁSICO
-router.get('/', obrasController.getAll);
-router.get('/:id', obrasController.getById);
-router.post('/', obrasController.create);
-router.put('/:id', obrasController.update);
-router.delete('/:id', obrasController.delete);
+// 🔒 Rutas específicas ANTES de /:id
+router.get('/usuario/:usuario_id', authMiddleware, obrasController.getByUsuario);
+router.get('/estado/:estado', authMiddleware, obrasController.getByEstado);
+router.get('/cliente/:cliente_id', authMiddleware, obrasController.getByCliente);
+router.get('/tipo/:tipo', authMiddleware, obrasController.getByTipo);
 
-// 🔹 RUTAS ADICIONALES
-router.get('/usuario/:usuario_id', obrasController.getByUsuario);
-router.get('/estado/:estado', obrasController.getByEstado);
-router.get('/cliente/:cliente_id', obrasController.getByCliente);
-router.get('/tipo/:tipo', obrasController.getByTipo);
-router.get('/:id/partidas', obrasController.getWithPartidas);
+// CRUD BÁSICO
+router.get('/', authMiddleware, obrasController.getAll);
+router.post('/', authMiddleware, obrasController.create);
+router.get('/:id', authMiddleware, obrasController.getById);
+router.put('/:id', authMiddleware, obrasController.update);
+router.delete('/:id', authMiddleware, obrasController.delete);
+router.get('/:id/partidas', authMiddleware, obrasController.getWithPartidas);
 
 export default router;

@@ -4,9 +4,9 @@ export class ApuDetalleModel {
     this.partida_id = data.partida_id || null;
     this.recurso_id = data.recurso_id || null;
     this.cuadrilla_id = data.cuadrilla_id || null;
-    this.cantidad = data.cantidad || 0;
-    this.precio_unitario = data.precio_unitario || 0;
-    this.rendimiento = data.rendimiento || null;
+    this.cantidad = data.cantidad ?? 0;
+    this.precio_unitario = data.precio_unitario ?? 0;
+    this.rendimiento = data.rendimiento ?? null;
     this.created_at = data.created_at || new Date();
   }
 
@@ -22,8 +22,7 @@ export class ApuDetalleModel {
       cuadrilla_id: detalle.cuadrilla_id,
       cantidad: detalle.cantidad,
       precio_unitario: detalle.precio_unitario,
-      rendimiento: detalle.rendimiento,
-      created_at: detalle.created_at
+      rendimiento: detalle.rendimiento
     };
   }
 
@@ -43,11 +42,11 @@ export class ApuDetalleModel {
       errors.push('No puede especificar ambos: recurso_id y cuadrilla_id');
     }
     
-    if (this.cantidad <= 0) {
+    if (this.cantidad === undefined || this.cantidad === null || this.cantidad <= 0) {
       errors.push('La cantidad debe ser mayor a cero');
     }
     
-    if (this.precio_unitario <= 0) {
+    if (this.precio_unitario === undefined || this.precio_unitario === null || this.precio_unitario <= 0) {
       errors.push('El precio unitario debe ser mayor a cero');
     }
     

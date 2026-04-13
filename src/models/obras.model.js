@@ -28,8 +28,7 @@ export class ObraModel {
       descripcion: obra.descripcion,
       tipo: obra.tipo,
       estado: obra.estado,
-      fecha_inicio: obra.fecha_inicio,
-      created_at: obra.created_at
+      fecha_inicio: obra.fecha_inicio
     };
   }
 

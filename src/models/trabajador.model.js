@@ -5,7 +5,7 @@ export class TrabajadorModel {
     this.nombre = data.nombre || '';
     this.identificacion = data.identificacion || '';
     this.cargo = data.cargo || '';
-    this.salario_diario = data.salario_diario || 0;
+    this.salario_diario = data.salario_diario ?? 0;
     this.created_at = data.created_at || new Date();
   }
 
@@ -20,8 +20,7 @@ export class TrabajadorModel {
       nombre: trabajador.nombre,
       identificacion: trabajador.identificacion,
       cargo: trabajador.cargo,
-      salario_diario: trabajador.salario_diario,
-      created_at: trabajador.created_at
+      salario_diario: trabajador.salario_diario
     };
   }
 

@@ -5,7 +5,7 @@ export class PartidaModel {
     this.nombre = data.nombre || '';
     this.descripcion = data.descripcion || '';
     this.unidad = data.unidad || '';
-    this.cantidad = data.cantidad || 0;
+    this.cantidad = data.cantidad ?? 0;
     this.created_at = data.created_at || new Date();
   }
 
@@ -20,8 +20,7 @@ export class PartidaModel {
       nombre: partida.nombre,
       descripcion: partida.descripcion,
       unidad: partida.unidad,
-      cantidad: partida.cantidad,
-      created_at: partida.created_at
+      cantidad: partida.cantidad
     };
   }
 
@@ -40,7 +39,7 @@ export class PartidaModel {
       errors.push('La unidad es requerida');
     }
     
-    if (this.cantidad <= 0) {
+    if (this.cantidad === undefined || this.cantidad === null || this.cantidad <= 0) {
       errors.push('La cantidad debe ser mayor a cero');
     }
     

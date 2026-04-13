@@ -2,6 +2,12 @@ import { supabase } from '../config/db.js';
 import { CuadrillaModel } from '../models/cuadrillas.model.js';
 import { v4 as uuidv4 } from 'uuid';
 
+// Función para sanitizar input de búsquedas ilike
+function sanitizeSearchTerm(term) {
+  if (!term || typeof term !== 'string') return '';
+  return term.replace(/[%_\\]/g, '\\$&');
+}
+
 export class CuadrillasService {
   async getAll() {
     try {
@@ -83,6 +89,10 @@ export class CuadrillasService {
 
   async delete(id) {
     try {
+      // Verificar que la cuadrilla existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('cuadrillas')
         .delete()
@@ -181,11 +191,12 @@ export class CuadrillasService {
 
   async searchByNombre(usuario_id, searchTerm) {
     try {
+      const sanitized = sanitizeSearchTerm(searchTerm);
       const { data, error } = await supabase
         .from('cuadrillas')
         .select('*')
         .eq('usuario_id', usuario_id)
-        .ilike('nombre', `%${searchTerm}%`)
+        .ilike('nombre', `%${sanitized}%`)
         .order('nombre', { ascending: true });
 
       if (error) throw error;

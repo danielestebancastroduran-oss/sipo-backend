@@ -95,6 +95,10 @@ export class PartidasService {
 
   async delete(id) {
     try {
+      // Verificar que la partida existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('partidas')
         .delete()
