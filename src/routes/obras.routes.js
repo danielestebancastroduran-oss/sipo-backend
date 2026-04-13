@@ -1,6 +1,7 @@
 import express from 'express';
 import { ObrasController } from '../controllers/obras.controller.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
+import { generateObraPdf } from '../controllers/pdf.controller.js';
 
 const router = express.Router();
 const obrasController = new ObrasController();
@@ -19,4 +20,8 @@ router.put('/:id', authMiddleware, obrasController.update);
 router.delete('/:id', authMiddleware, obrasController.delete);
 router.get('/:id/partidas', authMiddleware, obrasController.getWithPartidas);
 
+// 📄 Generación de PDF
+router.get('/:id/pdf', authMiddleware, generateObraPdf);
+
 export default router;
+
