@@ -19,6 +19,8 @@ import departamentosRoutes from "./src/routes/departamentos.routes.js";
 import municipiosRoutes from "./src/routes/municipios.routes.js";
 import aiuConfigRoutes from "./src/routes/aiu_config.routes.js";
 import configuracionFiscalRoutes from "./src/routes/configuracion_fiscal.routes.js";
+import empresaConfigRoutes from "./src/routes/empresa_config.routes.js";
+import preferenciasPdfRoutes from "./src/routes/preferencias_pdf.routes.js";
 import { errorHandler, notFoundHandler } from "./src/middleware/errorHandler.js";
 
 const app = express();
@@ -77,6 +79,8 @@ app.use("/api/departamentos", departamentosRoutes);
 app.use("/api/municipios", municipiosRoutes);
 app.use("/api/aiu-config", aiuConfigRoutes);
 app.use("/api/configuracion-fiscal", configuracionFiscalRoutes);
+app.use("/api/empresa-config", empresaConfigRoutes);
+app.use("/api/preferencias-pdf", preferenciasPdfRoutes);
 
 // 🔹 PRUEBA RÁPIDA
 app.get("/", (req, res) => {
