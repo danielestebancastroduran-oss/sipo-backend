@@ -148,11 +148,28 @@ export class AiuConfigService {
     }
   }
 
-  async getDefaultConfig() {
-    try {
-      return new AiuConfigModel();
-    } catch (error) {
-      throw new Error(`Error al obtener configuración AIU por defecto: ${error.message}`);
+  async getDefaultConfig(usuario_id) {
+  try {
+    const { data, error } = await supabase
+      .from('aiu_config')
+      .select('*')
+      .eq('usuario_id', usuario_id)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+
+    // Si no existe en BD → valores por defecto
+    if (!data) {
+      return {
+        imprevistos: 5,
+        utilidad: 5,
+        iva_sobre_utilidad: 19
+      };
     }
+
+    return data;
+  } catch (error) {
+    throw new Error(`Error al obtener configuración AIU: ${error.message}`);
   }
 }
+};

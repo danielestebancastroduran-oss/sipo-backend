@@ -192,22 +192,30 @@ export class ConfiguracionFiscalController {
 
   // GET /api/configuracion-fiscal/default
   getDefaultConfig = async (req, res) => {
-    try {
-      const config = await this.configuracionFiscalService.getDefaultConfig();
-      
-      res.json({
-        success: true,
-        data: config,
-        message: 'Configuración fiscal por defecto obtenida correctamente'
-      });
-    } catch (error) {
-      console.error('Error en getDefaultConfig configuracion-fiscal:', error);
-      res.status(500).json({
+  try {
+    const { usuario_id } = req.query;
+
+    if (!usuario_id) {
+      return res.status(400).json({
         success: false,
-        message: error.message || 'Error al obtener la configuración fiscal por defecto'
+        message: 'usuario_id es requerido'
       });
     }
-  };
+
+    const config = await this.configuracionFiscalService.getDefaultConfig(usuario_id);
+
+    res.json({
+      success: true,
+      data: config
+    });
+  } catch (error) {
+    console.error('Error en getDefaultConfig configuracion-fiscal:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
   // POST /api/configuracion-fiscal/validate-nit/:usuario_id
   validateNit = async (req, res) => {

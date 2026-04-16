@@ -159,7 +159,7 @@ export class RecursosService {
         .from('recursos')
         .select(`
           *,
-          apu_detalles (
+          apu_detalle (
             id,
             cantidad,
             precio_unitario,
@@ -174,10 +174,10 @@ export class RecursosService {
       if (error) throw error;
       
       // Calcular estadísticas de uso
-      if (data && data.apu_detalles) {
-        data.total_usos = data.apu_detalles.length;
-        data.total_cantidad = data.apu_detalles.reduce((sum, detalle) => sum + detalle.cantidad, 0);
-        data.total_valor = data.apu_detalles.reduce((sum, detalle) => 
+      if (data && data.apu_detalle) {
+        data.total_usos = data.apu_detalle.length;
+        data.total_cantidad = data.apu_detalle.reduce((sum, detalle) => sum + detalle.cantidad, 0);
+        data.total_valor = data.apu_detalle.reduce((sum, detalle) => 
           sum + (detalle.cantidad * detalle.precio_unitario), 0);
       }
       
