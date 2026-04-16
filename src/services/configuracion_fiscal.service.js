@@ -143,14 +143,35 @@ export class ConfiguracionFiscalService {
       throw new Error(`Error al calcular retenciones: ${error.message}`);
     }
   }
+async getDefaultConfig(usuario_id) {
+  try {
+    const { data, error } = await supabase
+      .from('configuracion_fiscal')
+      .select('*')
+      .eq('usuario_id', usuario_id)
+      .single();
 
-  async getDefaultConfig() {
-    try {
-      return new ConfiguracionFiscalModel();
-    } catch (error) {
-      throw new Error(`Error al obtener configuración fiscal por defecto: ${error.message}`);
+    if (error && error.code !== 'PGRST116') throw error;
+
+    // 🔥 Si no existe → valores por defecto
+    if (!data) {
+      return {
+        nit: null,
+        responsabilidad_juridica: null,
+        rut_url: null,
+        regimen_tributario: null,
+        retencion_fuente: 0,
+        ica_porcentaje: 0,
+        reteica_porcentaje: 0,
+        iva_porcentaje: 19
+      };
     }
+
+    return data;
+  } catch (error) {
+    throw new Error(`Error al obtener configuración fiscal: ${error.message}`);
   }
+} 
 
   async validateNit(usuario_id, nit) {
     try {

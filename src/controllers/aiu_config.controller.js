@@ -192,20 +192,28 @@ export class AiuConfigController {
 
   // GET /api/aiu-config/default
   getDefaultConfig = async (req, res) => {
-    try {
-      const config = await this.aiuConfigService.getDefaultConfig();
-      
-      res.json({
-        success: true,
-        data: config,
-        message: 'Configuración AIU por defecto obtenida correctamente'
-      });
-    } catch (error) {
-      console.error('Error en getDefaultConfig aiu-config:', error);
-      res.status(500).json({
+  try {
+    const { usuario_id } = req.query; // 👈 clave
+
+    if (!usuario_id) {
+      return res.status(400).json({
         success: false,
-        message: error.message || 'Error al obtener la configuración AIU por defecto'
+        message: 'usuario_id es requerido'
       });
     }
-  };
+
+    const config = await this.aiuConfigService.getDefaultConfig(usuario_id);
+
+    res.json({
+      success: true,
+      data: config
+    });
+  } catch (error) {
+    console.error('Error en getDefaultConfig aiu-config:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 }
+};

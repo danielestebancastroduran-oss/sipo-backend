@@ -794,7 +794,7 @@ curl -X PUT http://localhost:3000/api/configuracion-fiscal/usuario/1 \
   -H "Content-Type: application/json" \
   -d '{
     "nit": "900123456-7",
-    "nombre_empresa": "Constructora ABC S.A. (Actualizado)",
+    "nombre_empresa": "Constructora ABC S.A.S",
     "regimen_tributario": "simplificado"
   }'
 ```
