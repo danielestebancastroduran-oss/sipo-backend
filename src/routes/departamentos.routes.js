@@ -1,19 +1,27 @@
 import express from 'express';
 import { DepartamentosController } from '../controllers/departamentos.controller.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
+import {
+  validateBody,
+  validateParams,
+  IdParamSchema,
+  DepartamentoCreateSchema,
+  DepartamentoUpdateSchema
+} from '../middleware/validation.js';
 
 const router = express.Router();
 const departamentosController = new DepartamentosController();
 
-// 🔹 CRUD BÁSICO
-router.get('/', departamentosController.getAll);
-router.get('/:id', departamentosController.getById);
-router.post('/', departamentosController.create);
-router.put('/:id', departamentosController.update);
-router.delete('/:id', departamentosController.delete);
+// 🔒 Rutas específicas ANTES de /:id
+router.get('/dane/:codigo_dane', authMiddleware, departamentosController.getByCodigoDane);
+router.get('/search/:searchTerm', authMiddleware, departamentosController.searchByNombre);
 
-// 🔹 RUTAS ADICIONALES
-router.get('/dane/:codigo_dane', departamentosController.getByCodigoDane);
-router.get('/:id/municipios', departamentosController.getWithMunicipios);
-router.get('/search/:searchTerm', departamentosController.searchByNombre);
+// CRUD BÁSICO
+router.get('/', authMiddleware, departamentosController.getAll);
+router.post('/', authMiddleware, validateBody(DepartamentoCreateSchema), departamentosController.create);
+router.get('/:id', authMiddleware, validateParams(IdParamSchema), departamentosController.getById);
+router.put('/:id', authMiddleware, validateParams(IdParamSchema), validateBody(DepartamentoUpdateSchema), departamentosController.update);
+router.delete('/:id', authMiddleware, validateParams(IdParamSchema), departamentosController.delete);
+router.get('/:id/municipios', authMiddleware, validateParams(IdParamSchema), departamentosController.getWithMunicipios);
 
 export default router;

@@ -1,4 +1,6 @@
 import { TrabajadorService } from '../services/trabajador.service.js';
+import logger from '../utils/logger.js';
+import { formatPaginatedResponse } from '../utils/pagination.helper.js';
 
 export class TrabajadorController {
   constructor() {
@@ -8,14 +10,17 @@ export class TrabajadorController {
   // GET /api/trabajadores
   getAll = async (req, res) => {
     try {
-      const trabajadores = await this.trabajadorService.getAll();
-      res.json({
-        success: true,
-        data: trabajadores,
-        message: 'Trabajadores obtenidos correctamente'
-      });
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.trabajadorService.getAll({ limit, offset, order });
+
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getAll trabajadores:', error);
+      logger.error('Error en getAll trabajadores:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los trabajadores'
@@ -42,7 +47,7 @@ export class TrabajadorController {
         message: 'Trabajador obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getById trabajador:', error);
+      logger.error('Error en getById trabajador:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el trabajador'
@@ -60,7 +65,7 @@ export class TrabajadorController {
         message: 'Trabajador creado correctamente'
       });
     } catch (error) {
-      console.error('Error en create trabajador:', error);
+      logger.error('Error en create trabajador:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear el trabajador'
@@ -87,7 +92,7 @@ export class TrabajadorController {
         message: 'Trabajador actualizado correctamente'
       });
     } catch (error) {
-      console.error('Error en update trabajador:', error);
+      logger.error('Error en update trabajador:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar el trabajador'
@@ -113,7 +118,7 @@ export class TrabajadorController {
         message: 'Trabajador eliminado correctamente'
       });
     } catch (error) {
-      console.error('Error en delete trabajador:', error);
+      logger.error('Error en delete trabajador:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar el trabajador'
@@ -125,18 +130,40 @@ export class TrabajadorController {
   getByUsuario = async (req, res) => {
     try {
       const { usuario_id } = req.params;
-      const trabajadores = await this.trabajadorService.getByUsuario(usuario_id);
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.trabajadorService.getByUsuario(usuario_id, { limit, offset, order });
+      
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
+    } catch (error) {
+      logger.error('Error en getByUsuario trabajadores:', { error: error.message });
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Error al obtener los trabajadores del usuario'
+      });
+    }
+  };
+
+  // GET /api/trabajadores/cargo/:cargo
+  getByCargo = async (req, res) => {
+    try {
+      const { cargo } = req.params;
+      const trabajadores = await this.trabajadorService.getByCargo(cargo);
       
       res.json({
         success: true,
         data: trabajadores,
-        message: 'Trabajadores del usuario obtenidos correctamente'
+        message: 'Trabajadores por cargo obtenidos correctamente'
       });
     } catch (error) {
-      console.error('Error en getByUsuario trabajadores:', error);
+      logger.error('Error en getByCargo trabajadores:', error);
       res.status(500).json({
         success: false,
-        message: error.message || 'Error al obtener los trabajadores del usuario'
+        message: error.message || 'Error al obtener los trabajadores por cargo'
       });
     }
   };
@@ -162,7 +189,7 @@ export class TrabajadorController {
         message: 'Trabajador por identificación obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getByIdentificacion trabajador:', error);
+      logger.error('Error en getByIdentificacion trabajador:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el trabajador por identificación'
@@ -182,7 +209,7 @@ export class TrabajadorController {
         message: 'Trabajadores por cargo obtenidos correctamente'
       });
     } catch (error) {
-      console.error('Error en getByCargo trabajadores:', error);
+      logger.error('Error en getByCargo trabajadores:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los trabajadores por cargo'
@@ -211,7 +238,7 @@ export class TrabajadorController {
         message: 'Búsqueda de trabajadores completada correctamente'
       });
     } catch (error) {
-      console.error('Error en searchByNombre trabajadores:', error);
+      logger.error('Error en searchByNombre trabajadores:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al buscar trabajadores'
@@ -238,7 +265,7 @@ export class TrabajadorController {
         message: 'Trabajador con cuadrillas obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getWithCuadrillas trabajador:', error);
+      logger.error('Error en getWithCuadrillas trabajador:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el trabajador con cuadrillas'

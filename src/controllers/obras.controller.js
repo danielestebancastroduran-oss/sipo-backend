@@ -1,4 +1,6 @@
 import { ObrasService } from '../services/obras.service.js';
+import logger from '../utils/logger.js';
+import { formatPaginatedResponse } from '../utils/pagination.helper.js';
 
 export class ObrasController {
   constructor() {
@@ -8,14 +10,17 @@ export class ObrasController {
   // GET /api/obras
   getAll = async (req, res) => {
     try {
-      const obras = await this.obrasService.getAll();
-      res.json({
-        success: true,
-        data: obras,
-        message: 'Obras obtenidas correctamente'
-      });
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.obrasService.getAll({ limit, offset, order });
+
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getAll obras:', error);
+      logger.error('Error en getAll obras:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las obras'
@@ -42,7 +47,7 @@ export class ObrasController {
         message: 'Obra obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getById obra:', error);
+      logger.error('Error en getById obra:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la obra'
@@ -60,7 +65,7 @@ export class ObrasController {
         message: 'Obra creada correctamente'
       });
     } catch (error) {
-      console.error('Error en create obra:', error);
+      logger.error('Error en create obra:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear la obra'
@@ -87,7 +92,7 @@ export class ObrasController {
         message: 'Obra actualizada correctamente'
       });
     } catch (error) {
-      console.error('Error en update obra:', error);
+      logger.error('Error en update obra:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar la obra'
@@ -113,7 +118,7 @@ export class ObrasController {
         message: 'Obra eliminada correctamente'
       });
     } catch (error) {
-      console.error('Error en delete obra:', error);
+      logger.error('Error en delete obra:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar la obra'
@@ -125,15 +130,17 @@ export class ObrasController {
   getByUsuario = async (req, res) => {
     try {
       const { usuario_id } = req.params;
-      const obras = await this.obrasService.getByUsuario(usuario_id);
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.obrasService.getByUsuario(usuario_id, { limit, offset, order });
       
-      res.json({
-        success: true,
-        data: obras,
-        message: 'Obras del usuario obtenidas correctamente'
-      });
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getByUsuario obras:', error);
+      logger.error('Error en getByUsuario obras:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las obras del usuario'
@@ -153,7 +160,7 @@ export class ObrasController {
         message: 'Obras por estado obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getByEstado obras:', error);
+      logger.error('Error en getByEstado obras:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las obras por estado'
@@ -173,7 +180,7 @@ export class ObrasController {
         message: 'Obras del cliente obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getByCliente obras:', error);
+      logger.error('Error en getByCliente obras:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las obras del cliente'
@@ -193,7 +200,7 @@ export class ObrasController {
         message: 'Obras por tipo obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getByTipo obras:', error);
+      logger.error('Error en getByTipo obras:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las obras por tipo'
@@ -220,7 +227,7 @@ export class ObrasController {
         message: 'Obra con partidas obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getWithPartidas obra:', error);
+      logger.error('Error en getWithPartidas obra:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la obra con partidas'

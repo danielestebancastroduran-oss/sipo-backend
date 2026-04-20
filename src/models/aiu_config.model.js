@@ -2,9 +2,9 @@ export class AiuConfigModel {
   constructor(data = {}) {
     this.id = data.id || null;
     this.usuario_id = data.usuario_id || null;
-    this.imprevistos = data.imprevistos || 5;
-    this.utilidad = data.utilidad || 5;
-    this.iva_sobre_utilidad = data.iva_sobre_utilidad || 19;
+    this.imprevistos = data.imprevistos ?? 5;
+    this.utilidad = data.utilidad ?? 5;
+    this.iva_sobre_utilidad = data.iva_sobre_utilidad ?? 19;
     this.created_at = data.created_at || new Date();
   }
 
@@ -18,8 +18,7 @@ export class AiuConfigModel {
       usuario_id: aiuConfig.usuario_id,
       imprevistos: aiuConfig.imprevistos,
       utilidad: aiuConfig.utilidad,
-      iva_sobre_utilidad: aiuConfig.iva_sobre_utilidad,
-      created_at: aiuConfig.created_at
+      iva_sobre_utilidad: aiuConfig.iva_sobre_utilidad
     };
   }
 

@@ -1,4 +1,6 @@
 import { UsuarioService } from '../services/usuario.service.js';
+import logger from '../utils/logger.js';
+import { formatPaginatedResponse } from '../utils/pagination.helper.js';
 
 export class UsuarioController {
   constructor() {
@@ -27,7 +29,7 @@ export class UsuarioController {
         data: usuario.toPublic()
       });
     } catch (error) {
-      console.error('Error en register usuario:', error);
+      logger.error('Error en register usuario:', { error: error.message, stack: error.stack });
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear el usuario'
@@ -38,9 +40,9 @@ export class UsuarioController {
   // POST /api/usuarios/login - LOGIN
   login = async (req, res) => {
     try {
-      const { correo, password_hash } = req.body;
+      const { correo, password } = req.body;
       
-      const usuario = await this.usuarioService.login(correo, password_hash);
+      const usuario = await this.usuarioService.login(correo, password);
       
       res.json({
         success: true,
@@ -48,7 +50,7 @@ export class UsuarioController {
         data: usuario // usuario ya incluye el token
       });
     } catch (error) {
-      console.error('Error en login usuario:', error);
+      logger.warn('Error en login usuario:', { error: error.message, ip: req.ip });
       res.status(401).json({
         success: false,
         message: error.message || 'Error en el login'
@@ -59,15 +61,17 @@ export class UsuarioController {
   // GET /api/usuarios - OBTENER USUARIOS
   getAll = async (req, res) => {
     try {
-      const usuarios = await this.usuarioService.getAll();
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.usuarioService.getAll({ limit, offset, order });
       
-      res.json({
-        success: true,
-        data: usuarios.map(usuario => usuario.toPublic()),
-        message: 'Usuarios obtenidos correctamente'
-      });
+      res.json(formatPaginatedResponse(
+        data.map(usuario => usuario.toPublic()),
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getAll usuarios:', error);
+      logger.error('Error en getAll usuarios:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los usuarios'
@@ -94,7 +98,7 @@ export class UsuarioController {
         message: 'Usuario obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getById usuario:', error);
+      logger.error('Error en getById usuario:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el usuario'
@@ -121,7 +125,7 @@ export class UsuarioController {
         message: 'Usuario actualizado correctamente'
       });
     } catch (error) {
-      console.error('Error en update usuario:', error);
+      logger.error('Error en update usuario:', { error: error.message });
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar el usuario'
@@ -147,7 +151,7 @@ export class UsuarioController {
         message: 'Usuario eliminado correctamente'
       });
     } catch (error) {
-      console.error('Error en delete usuario:', error);
+      logger.error('Error en delete usuario:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar el usuario'
@@ -167,7 +171,7 @@ export class UsuarioController {
         message: 'Usuarios por rol obtenidos correctamente'
       });
     } catch (error) {
-      console.error('Error en getByRol usuarios:', error);
+      logger.error('Error en getByRol usuarios:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener usuarios por rol'
@@ -186,7 +190,7 @@ export class UsuarioController {
         message: 'Usuarios activos obtenidos correctamente'
       });
     } catch (error) {
-      console.error('Error en getActivos usuarios:', error);
+      logger.error('Error en getActivos usuarios:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener usuarios activos'
@@ -206,7 +210,7 @@ export class UsuarioController {
         message: 'Búsqueda de usuarios completada correctamente'
       });
     } catch (error) {
-      console.error('Error en searchByNombre usuarios:', error);
+      logger.error('Error en searchByNombre usuarios:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al buscar usuarios'
@@ -233,7 +237,7 @@ export class UsuarioController {
         message: 'Último acceso actualizado correctamente'
       });
     } catch (error) {
-      console.error('Error en updateUltimoAcceso usuario:', error);
+      logger.error('Error en updateUltimoAcceso usuario:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al actualizar último acceso'

@@ -1,25 +1,31 @@
 import express from 'express';
 import { ApuDetalleController } from '../controllers/apu_detalle.controller.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
+import {
+  validateBody,
+  validateParams,
+  IdParamSchema,
+  ApuDetalleCreateSchema,
+  ApuDetalleUpdateSchema
+} from '../middleware/validation.js';
 
 const router = express.Router();
 const apuDetalleController = new ApuDetalleController();
 
-// 🔹 CRUD BÁSICO
-router.get('/', apuDetalleController.getAll);
-router.get('/:id', apuDetalleController.getById);
-router.post('/', apuDetalleController.create);
-router.put('/:id', apuDetalleController.update);
-router.delete('/:id', apuDetalleController.delete);
+// 🔒 Rutas específicas ANTES de /:id
+router.get('/partida/:partida_id', authMiddleware, apuDetalleController.getByPartida);
+router.get('/partida/:partida_id/analysis', authMiddleware, apuDetalleController.getAnalysisByPartida);
+router.get('/recurso/:recurso_id', authMiddleware, apuDetalleController.getByRecurso);
+router.get('/cuadrilla/:cuadrilla_id', authMiddleware, apuDetalleController.getByCuadrilla);
+router.get('/obra/:obra_id', authMiddleware, apuDetalleController.getByObra);
+router.get('/obra/:obra_id/analysis', authMiddleware, apuDetalleController.getAnalysisByObra);
+router.post('/batch', authMiddleware, apuDetalleController.createBatch);
 
-// 🔹 RUTAS ADICIONALES
-router.get('/partida/:partida_id', apuDetalleController.getByPartida);
-router.get('/recurso/:recurso_id', apuDetalleController.getByRecurso);
-router.get('/cuadrilla/:cuadrilla_id', apuDetalleController.getByCuadrilla);
-
-// 🔹 RUTAS ESPECIALES
-router.post('/batch', apuDetalleController.createBatch);
-router.get('/partida/:partida_id/analysis', apuDetalleController.getAnalysisByPartida);
-router.get('/obra/:obra_id', apuDetalleController.getByObra);
-router.get('/obra/:obra_id/analysis', apuDetalleController.getAnalysisByObra);
+// CRUD BÁSICO
+router.get('/', authMiddleware, apuDetalleController.getAll);
+router.post('/', authMiddleware, validateBody(ApuDetalleCreateSchema), apuDetalleController.create);
+router.get('/:id', authMiddleware, validateParams(IdParamSchema), apuDetalleController.getById);
+router.put('/:id', authMiddleware, validateParams(IdParamSchema), validateBody(ApuDetalleUpdateSchema), apuDetalleController.update);
+router.delete('/:id', authMiddleware, validateParams(IdParamSchema), apuDetalleController.delete);
 
 export default router;

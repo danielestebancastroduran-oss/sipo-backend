@@ -608,21 +608,13 @@ curl -X GET http://localhost:3000/api/departamentos/1/municipios
 curl -X GET http://localhost:3000/api/departamentos/search/Cauca
 ```
 
-### Actualizar departamento
-```bash
-curl -X PUT http://localhost:3000/api/departamentos/1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Valle del Cauca (Actualizado)"
-  }'
-```
 
-### Eliminar departamento
-```bash
-curl -X DELETE http://localhost:3000/api/departamentos/1
-```
 
----
+
+
+
+
+
 
 ## 🏙️ MUNICIPIOS (/api/municipios)
 
@@ -668,19 +660,6 @@ curl -X GET http://localhost:3000/api/municipios/dane/76001
 curl -X GET "http://localhost:3000/api/municipios/search/Cali?departamento_id=1"
 ```
 
-### Actualizar municipio
-```bash
-curl -X PUT http://localhost:3000/api/municipios/1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Santiago de Cali (Actualizado)"
-  }'
-```
-
-### Eliminar municipio
-```bash
-curl -X DELETE http://localhost:3000/api/municipios/1
-```
 
 ---
 
@@ -794,7 +773,7 @@ curl -X PUT http://localhost:3000/api/configuracion-fiscal/usuario/1 \
   -H "Content-Type: application/json" \
   -d '{
     "nit": "900123456-7",
-    "nombre_empresa": "Constructora ABC S.A. (Actualizado)",
+    "nombre_empresa": "Constructora ABC S.A.S",
     "regimen_tributario": "simplificado"
   }'
 ```

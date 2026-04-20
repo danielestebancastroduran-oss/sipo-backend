@@ -1,16 +1,28 @@
 import { supabase } from '../config/db.js';
 import { RecursoModel } from '../models/recursos.model.js';
+import { v4 as uuidv4 } from 'uuid';
+import { getPaginationRange } from '../utils/pagination.helper.js';
+
+// Función para sanitizar input de búsquedas ilike
+function sanitizeSearchTerm(term) {
+  if (!term || typeof term !== 'string') return '';
+  return term.replace(/[%_\\]/g, '\\$&');
+}
 
 export class RecursosService {
-  async getAll() {
+  async getAll(options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('recursos')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener recursos: ${error.message}`);
     }
@@ -40,6 +52,11 @@ export class RecursosService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!recurso.id) {
+        recurso.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('recursos')
         .insert([RecursoModel.toDatabase(recurso)])
@@ -66,11 +83,10 @@ export class RecursosService {
         .from('recursos')
         .update(RecursoModel.toDatabase(recurso))
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data[0]; // Devolver el primer elemento del array
     } catch (error) {
       throw new Error(`Error al actualizar recurso: ${error.message}`);
     }
@@ -78,6 +94,10 @@ export class RecursosService {
 
   async delete(id) {
     try {
+      // Verificar que el recurso existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('recursos')
         .delete()
@@ -90,16 +110,20 @@ export class RecursosService {
     }
   }
 
-  async getByUsuario(usuario_id) {
+  async getByUsuario(usuario_id, options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('recursos')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('usuario_id', usuario_id)
-        .order('nombre', { ascending: true });
+        .order('nombre', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener recursos del usuario: ${error.message}`);
     }
@@ -123,11 +147,12 @@ export class RecursosService {
 
   async searchByNombre(usuario_id, searchTerm) {
     try {
+      const sanitized = sanitizeSearchTerm(searchTerm);
       const { data, error } = await supabase
         .from('recursos')
         .select('*')
         .eq('usuario_id', usuario_id)
-        .ilike('nombre', `%${searchTerm}%`)
+        .ilike('nombre', `%${sanitized}%`)
         .order('nombre', { ascending: true });
 
       if (error) throw error;
@@ -143,7 +168,7 @@ export class RecursosService {
         .from('recursos')
         .select(`
           *,
-          apu_detalles (
+          apu_detalle (
             id,
             cantidad,
             precio_unitario,
@@ -158,10 +183,10 @@ export class RecursosService {
       if (error) throw error;
       
       // Calcular estadísticas de uso
-      if (data && data.apu_detalles) {
-        data.total_usos = data.apu_detalles.length;
-        data.total_cantidad = data.apu_detalles.reduce((sum, detalle) => sum + detalle.cantidad, 0);
-        data.total_valor = data.apu_detalles.reduce((sum, detalle) => 
+      if (data && data.apu_detalle) {
+        data.total_usos = data.apu_detalle.length;
+        data.total_cantidad = data.apu_detalle.reduce((sum, detalle) => sum + detalle.cantidad, 0);
+        data.total_valor = data.apu_detalle.reduce((sum, detalle) => 
           sum + (detalle.cantidad * detalle.precio_unitario), 0);
       }
       

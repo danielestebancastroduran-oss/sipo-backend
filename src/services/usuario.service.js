@@ -4,15 +4,30 @@ import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 
+// Campos que un usuario puede actualizar sobre sí mismo
+const CAMPOS_ACTUALIZABLES = ['nombre', 'apellido', 'correo'];
+
+// Función para sanitizar input de búsquedas ilike
+function sanitizeSearchTerm(term) {
+  if (!term || typeof term !== 'string') return '';
+  // Escapar caracteres especiales de pattern matching en PostgreSQL
+  return term.replace(/[%_\\]/g, '\\$&');
+}
+
 export class UsuarioService {
-  async getAll() {
+  async getAll(options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('usuarios')
-        .select('*');
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data.map(usuario => UsuarioModel.fromDatabase(usuario));
+      return { data: data.map(usuario => UsuarioModel.fromDatabase(usuario)), count };
     } catch (error) {
       throw new Error(`Error al obtener usuarios: ${error.message}`);
     }
@@ -26,6 +41,7 @@ export class UsuarioService {
         .eq('id', id)
         .single();
 
+      if (error && error.code === 'PGRST116') return null;
       if (error) throw error;
       return data ? UsuarioModel.fromDatabase(data) : null;
     } catch (error) {
@@ -96,23 +112,32 @@ export class UsuarioService {
 
   async update(id, usuarioData) {
     try {
-      // Crear objeto solo con los campos proporcionados
-      const updateData = { ...usuarioData };
-      
-      // Si se proporciona nueva contraseña, encriptarla
-      if (usuarioData.password && !usuarioData.password_hash) {
-        updateData.password_hash = await bcrypt.hash(usuarioData.password, 10);
-        delete updateData.password; // Eliminar password plano
+      // Solo permitir campos seguros para actualización
+      const updateData = {};
+      for (const campo of CAMPOS_ACTUALIZABLES) {
+        if (usuarioData[campo] !== undefined) {
+          updateData[campo] = usuarioData[campo];
+        }
       }
 
-      
+      // Si se proporciona nueva contraseña, encriptarla
+      if (usuarioData.password) {
+        updateData.password_hash = await bcrypt.hash(usuarioData.password, 10);
+      }
+
+      // Si no hay campos para actualizar
+      if (Object.keys(updateData).length === 0) {
+        throw new Error('No se proporcionaron campos válidos para actualizar');
+      }
+
       const { data, error } = await supabase
         .from('usuarios')
-        .update(updateData) // Solo enviar los campos que se quieren actualizar
+        .update(updateData)
         .eq('id', id)
         .select('*')
         .single();
 
+      if (error && error.code === 'PGRST116') return null;
       if (error) throw error;
       return UsuarioModel.fromDatabase(data);
     } catch (error) {
@@ -122,6 +147,10 @@ export class UsuarioService {
 
   async delete(id) {
     try {
+      // Verificar que el usuario existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('usuarios')
         .delete()
@@ -164,37 +193,33 @@ export class UsuarioService {
   }
 
   generateToken(usuario) {
-    try {
-      const payload = {
-        id: usuario.id,
-        correo: usuario.correo,
-        rol: usuario.rol
-      };
+    const payload = {
+      id: usuario.id,
+      correo: usuario.correo,
+      rol: usuario.rol
+    };
 
-      const secret = process.env.JWT_SECRET || 'tu_secreto_default_aqui';
-      const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
-
-      return jwt.sign(payload, secret, { expiresIn });
-    } catch (error) {
-      throw new Error(`Error al generar token: ${error.message}`);
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error('JWT_SECRET no está configurado en las variables de entorno');
     }
+
+    const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
+    return jwt.sign(payload, secret, { expiresIn });
   }
 
   verifyToken(token) {
-    try {
-      const secret = process.env.JWT_SECRET || 'tu_secreto_default_aqui';
-      return jwt.verify(token, secret);
-    } catch (error) {
-      throw new Error('Token inválido o expirado');
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error('JWT_SECRET no está configurado en las variables de entorno');
     }
+    return jwt.verify(token, secret);
   }
 
   async updateUltimoAcceso(id) {
     try {
       const usuario = await this.getById(id);
-      if (!usuario) {
-        throw new Error('Usuario no encontrado');
-      }
+      if (!usuario) return null;
 
       usuario.updateUltimoAcceso();
       const { data, error } = await supabase
@@ -243,10 +268,11 @@ export class UsuarioService {
 
   async searchByNombre(searchTerm) {
     try {
+      const sanitized = sanitizeSearchTerm(searchTerm);
       const { data, error } = await supabase
         .from('usuarios')
         .select('*')
-        .or(`nombre.ilike.%${searchTerm}%,apellido.ilike.%${searchTerm}%`)
+        .or(`nombre.ilike.%${sanitized}%,apellido.ilike.%${sanitized}%`)
         .order('nombre', { ascending: true });
 
       if (error) throw error;

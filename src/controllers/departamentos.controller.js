@@ -1,4 +1,6 @@
 import { DepartamentosService } from '../services/departamentos.service.js';
+import logger from '../utils/logger.js';
+import { formatPaginatedResponse } from '../utils/pagination.helper.js';
 
 export class DepartamentosController {
   constructor() {
@@ -8,14 +10,17 @@ export class DepartamentosController {
   // GET /api/departamentos
   getAll = async (req, res) => {
     try {
-      const departamentos = await this.departamentosService.getAll();
-      res.json({
-        success: true,
-        data: departamentos,
-        message: 'Departamentos obtenidos correctamente'
-      });
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.departamentosService.getAll({ limit, offset, order });
+
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getAll departamentos:', error);
+      logger.error('Error en getAll departamentos:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los departamentos'
@@ -42,7 +47,7 @@ export class DepartamentosController {
         message: 'Departamento obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getById departamento:', error);
+      logger.error('Error en getById departamento:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el departamento'
@@ -60,7 +65,7 @@ export class DepartamentosController {
         message: 'Departamento creado correctamente'
       });
     } catch (error) {
-      console.error('Error en create departamento:', error);
+      logger.error('Error en create departamento:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear el departamento'
@@ -87,7 +92,7 @@ export class DepartamentosController {
         message: 'Departamento actualizado correctamente'
       });
     } catch (error) {
-      console.error('Error en update departamento:', error);
+      logger.error('Error en update departamento:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar el departamento'
@@ -113,7 +118,7 @@ export class DepartamentosController {
         message: 'Departamento eliminado correctamente'
       });
     } catch (error) {
-      console.error('Error en delete departamento:', error);
+      logger.error('Error en delete departamento:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar el departamento'
@@ -133,7 +138,7 @@ export class DepartamentosController {
         message: 'Departamento por código DANE obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getByCodigoDane departamento:', error);
+      logger.error('Error en getByCodigoDane departamento:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el departamento por código DANE'
@@ -160,7 +165,7 @@ export class DepartamentosController {
         message: 'Departamento con municipios obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getWithMunicipios departamento:', error);
+      logger.error('Error en getWithMunicipios departamento:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el departamento con municipios'
@@ -180,7 +185,7 @@ export class DepartamentosController {
         message: 'Búsqueda de departamentos completada correctamente'
       });
     } catch (error) {
-      console.error('Error en searchByNombre departamentos:', error);
+      logger.error('Error en searchByNombre departamentos:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al buscar departamentos'

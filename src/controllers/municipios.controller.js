@@ -1,4 +1,6 @@
 import { MunicipiosService } from '../services/municipios.service.js';
+import logger from '../utils/logger.js';
+import { formatPaginatedResponse } from '../utils/pagination.helper.js';
 
 export class MunicipiosController {
   constructor() {
@@ -8,14 +10,17 @@ export class MunicipiosController {
   // GET /api/municipios
   getAll = async (req, res) => {
     try {
-      const municipios = await this.municipiosService.getAll();
-      res.json({
-        success: true,
-        data: municipios,
-        message: 'Municipios obtenidos correctamente'
-      });
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.municipiosService.getAll({ limit, offset, order });
+
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getAll municipios:', error);
+      logger.error('Error en getAll municipios:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los municipios'
@@ -42,7 +47,7 @@ export class MunicipiosController {
         message: 'Municipio obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getById municipio:', error);
+      logger.error('Error en getById municipio:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el municipio'
@@ -60,7 +65,7 @@ export class MunicipiosController {
         message: 'Municipio creado correctamente'
       });
     } catch (error) {
-      console.error('Error en create municipio:', error);
+      logger.error('Error en create municipio:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear el municipio'
@@ -87,7 +92,7 @@ export class MunicipiosController {
         message: 'Municipio actualizado correctamente'
       });
     } catch (error) {
-      console.error('Error en update municipio:', error);
+      logger.error('Error en update municipio:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar el municipio'
@@ -113,7 +118,7 @@ export class MunicipiosController {
         message: 'Municipio eliminado correctamente'
       });
     } catch (error) {
-      console.error('Error en delete municipio:', error);
+      logger.error('Error en delete municipio:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar el municipio'
@@ -125,15 +130,17 @@ export class MunicipiosController {
   getByDepartamento = async (req, res) => {
     try {
       const { departamento_id } = req.params;
-      const municipios = await this.municipiosService.getByDepartamento(departamento_id);
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.municipiosService.getByDepartamento(departamento_id, { limit, offset, order });
       
-      res.json({
-        success: true,
-        data: municipios,
-        message: 'Municipios del departamento obtenidos correctamente'
-      });
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getByDepartamento municipios:', error);
+      logger.error('Error en getByDepartamento municipios:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los municipios del departamento'
@@ -152,7 +159,7 @@ export class MunicipiosController {
         message: 'Capitales de departamento obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getCapitales municipios:', error);
+      logger.error('Error en getCapitales municipios:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las capitales'
@@ -172,7 +179,7 @@ export class MunicipiosController {
         message: 'Municipio por código DANE obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getByCodigoDane municipio:', error);
+      logger.error('Error en getByCodigoDane municipio:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el municipio por código DANE'
@@ -193,7 +200,7 @@ export class MunicipiosController {
         message: 'Búsqueda de municipios completada correctamente'
       });
     } catch (error) {
-      console.error('Error en searchByNombre municipios:', error);
+      logger.error('Error en searchByNombre municipios:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al buscar municipios'

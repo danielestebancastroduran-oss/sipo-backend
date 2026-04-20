@@ -1,4 +1,5 @@
 import { ConfiguracionFiscalService } from '../services/configuracion_fiscal.service.js';
+import logger from '../utils/logger.js';
 
 export class ConfiguracionFiscalController {
   constructor() {
@@ -15,7 +16,7 @@ export class ConfiguracionFiscalController {
         message: 'Configuraciones fiscales obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getAll configuracion-fiscal:', error);
+      logger.error('Error en getAll configuracion-fiscal:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las configuraciones fiscales'
@@ -42,7 +43,7 @@ export class ConfiguracionFiscalController {
         message: 'Configuración fiscal obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getById configuracion-fiscal:', error);
+      logger.error('Error en getById configuracion-fiscal:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la configuración fiscal'
@@ -60,7 +61,7 @@ export class ConfiguracionFiscalController {
         message: 'Configuración fiscal creada correctamente'
       });
     } catch (error) {
-      console.error('Error en create configuracion-fiscal:', error);
+      logger.error('Error en create configuracion-fiscal:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear la configuración fiscal'
@@ -87,7 +88,7 @@ export class ConfiguracionFiscalController {
         message: 'Configuración fiscal actualizada correctamente'
       });
     } catch (error) {
-      console.error('Error en update configuracion-fiscal:', error);
+      logger.error('Error en update configuracion-fiscal:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar la configuración fiscal'
@@ -113,7 +114,7 @@ export class ConfiguracionFiscalController {
         message: 'Configuración fiscal eliminada correctamente'
       });
     } catch (error) {
-      console.error('Error en delete configuracion-fiscal:', error);
+      logger.error('Error en delete configuracion-fiscal:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar la configuración fiscal'
@@ -133,7 +134,7 @@ export class ConfiguracionFiscalController {
         message: 'Configuración fiscal del usuario obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getByUsuario configuracion-fiscal:', error);
+      logger.error('Error en getByUsuario configuracion-fiscal:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la configuración fiscal del usuario'
@@ -153,7 +154,7 @@ export class ConfiguracionFiscalController {
         message: 'Configuración fiscal guardada correctamente'
       });
     } catch (error) {
-      console.error('Error en upsertByUsuario configuracion-fiscal:', error);
+      logger.error('Error en upsertByUsuario configuracion-fiscal:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al guardar la configuración fiscal'
@@ -182,7 +183,7 @@ export class ConfiguracionFiscalController {
         message: 'Cálculo de retenciones realizado correctamente'
       });
     } catch (error) {
-      console.error('Error en calculateRetenciones configuracion-fiscal:', error);
+      logger.error('Error en calculateRetenciones configuracion-fiscal:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al calcular retenciones'
@@ -192,22 +193,30 @@ export class ConfiguracionFiscalController {
 
   // GET /api/configuracion-fiscal/default
   getDefaultConfig = async (req, res) => {
-    try {
-      const config = await this.configuracionFiscalService.getDefaultConfig();
-      
-      res.json({
-        success: true,
-        data: config,
-        message: 'Configuración fiscal por defecto obtenida correctamente'
-      });
-    } catch (error) {
-      console.error('Error en getDefaultConfig configuracion-fiscal:', error);
-      res.status(500).json({
+  try {
+    const { usuario_id } = req.query;
+
+    if (!usuario_id) {
+      return res.status(400).json({
         success: false,
-        message: error.message || 'Error al obtener la configuración fiscal por defecto'
+        message: 'usuario_id es requerido'
       });
     }
-  };
+
+    const config = await this.configuracionFiscalService.getDefaultConfig(usuario_id);
+
+    res.json({
+      success: true,
+      data: config
+    });
+  } catch (error) {
+    logger.error('Error en getDefaultConfig configuracion-fiscal:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
   // POST /api/configuracion-fiscal/validate-nit/:usuario_id
   validateNit = async (req, res) => {
@@ -230,7 +239,7 @@ export class ConfiguracionFiscalController {
         message: 'Validación de NIT completada'
       });
     } catch (error) {
-      console.error('Error en validateNit configuracion-fiscal:', error);
+      logger.error('Error en validateNit configuracion-fiscal:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al validar NIT'

@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { AiuConfigModel } from '../models/aiu_config.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class AiuConfigService {
   async getAll() {
@@ -40,6 +41,11 @@ export class AiuConfigService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!aiuConfig.id) {
+        aiuConfig.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('aiu_config')
         .insert([AiuConfigModel.toDatabase(aiuConfig)])
@@ -66,11 +72,10 @@ export class AiuConfigService {
         .from('aiu_config')
         .update(AiuConfigModel.toDatabase(aiuConfig))
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar configuración AIU: ${error.message}`);
     }
@@ -78,6 +83,10 @@ export class AiuConfigService {
 
   async delete(id) {
     try {
+      // Verificar que la configuración existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('aiu_config')
         .delete()
@@ -139,11 +148,28 @@ export class AiuConfigService {
     }
   }
 
-  async getDefaultConfig() {
-    try {
-      return new AiuConfigModel();
-    } catch (error) {
-      throw new Error(`Error al obtener configuración AIU por defecto: ${error.message}`);
+  async getDefaultConfig(usuario_id) {
+  try {
+    const { data, error } = await supabase
+      .from('aiu_config')
+      .select('*')
+      .eq('usuario_id', usuario_id)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+
+    // Si no existe en BD → valores por defecto
+    if (!data) {
+      return {
+        imprevistos: 5,
+        utilidad: 5,
+        iva_sobre_utilidad: 19
+      };
     }
+
+    return data;
+  } catch (error) {
+    throw new Error(`Error al obtener configuración AIU: ${error.message}`);
   }
 }
+};

@@ -1,16 +1,28 @@
 import { supabase } from '../config/db.js';
+import { getPaginationRange } from '../utils/pagination.helper.js';
 import { DepartamentoModel } from '../models/departamentos.model.js';
+import { v4 as uuidv4 } from 'uuid';
+
+// Función para sanitizar input de búsquedas ilike
+function sanitizeSearchTerm(term) {
+  if (!term || typeof term !== 'string') return '';
+  return term.replace(/[%_\\]/g, '\\$&');
+}
 
 export class DepartamentosService {
-  async getAll() {
+  async getAll(options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'asc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('departamentos')
-        .select('*')
-        .order('nombre', { ascending: true });
+        .select('*', { count: 'exact' })
+        .order('nombre', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener departamentos: ${error.message}`);
     }
@@ -40,6 +52,11 @@ export class DepartamentosService {
         throw new Error(validationErrors.join(', '));
       }
 
+      // Generar UUID si no existe
+      if (!departamento.id) {
+        departamento.id = uuidv4();
+      }
+
       const { data, error } = await supabase
         .from('departamentos')
         .insert([DepartamentoModel.toDatabase(departamento)])
@@ -66,11 +83,10 @@ export class DepartamentosService {
         .from('departamentos')
         .update(DepartamentoModel.toDatabase(departamento))
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data[0];
     } catch (error) {
       throw new Error(`Error al actualizar departamento: ${error.message}`);
     }
@@ -78,6 +94,10 @@ export class DepartamentosService {
 
   async delete(id) {
     try {
+      // Verificar que el departamento existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('departamentos')
         .delete()
@@ -140,10 +160,11 @@ export class DepartamentosService {
 
   async searchByNombre(searchTerm) {
     try {
+      const sanitized = sanitizeSearchTerm(searchTerm);
       const { data, error } = await supabase
         .from('departamentos')
         .select('*')
-        .ilike('nombre', `%${searchTerm}%`)
+        .ilike('nombre', `%${sanitized}%`)
         .order('nombre', { ascending: true });
 
       if (error) throw error;

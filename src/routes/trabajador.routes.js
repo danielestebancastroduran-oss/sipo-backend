@@ -1,21 +1,30 @@
 import express from 'express';
 import { TrabajadorController } from '../controllers/trabajador.controller.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
+import {
+  validateBody,
+  validateParams,
+  IdParamSchema,
+  UsuarioIdParamSchema,
+  TrabajadorCreateSchema,
+  TrabajadorUpdateSchema
+} from '../middleware/validation.js';
 
 const router = express.Router();
 const trabajadorController = new TrabajadorController();
 
-// 🔹 CRUD BÁSICO
-router.get('/', trabajadorController.getAll);
-router.get('/:id', trabajadorController.getById);
-router.post('/', trabajadorController.create);
-router.put('/:id', trabajadorController.update);
-router.delete('/:id', trabajadorController.delete);
+// 🔒 Rutas específicas ANTES de /:id
+router.get('/usuario/:usuario_id', authMiddleware, validateParams(UsuarioIdParamSchema), trabajadorController.getByUsuario);
+router.get('/cargo/:cargo', authMiddleware, trabajadorController.getByCargo);
+router.get('/identificacion/:identificacion', authMiddleware, trabajadorController.getByIdentificacion);
+router.get('/search/:searchTerm', authMiddleware, trabajadorController.searchByNombre);
 
-// 🔹 RUTAS ADICIONALES
-router.get('/usuario/:usuario_id', trabajadorController.getByUsuario);
-router.get('/identificacion/:identificacion', trabajadorController.getByIdentificacion);
-router.get('/usuario/:usuario_id/cargo/:cargo', trabajadorController.getByCargo);
-router.get('/search/:searchTerm', trabajadorController.searchByNombre);
-router.get('/:id/cuadrillas', trabajadorController.getWithCuadrillas);
+// CRUD BÁSICO
+router.get('/', authMiddleware, trabajadorController.getAll);
+router.post('/', authMiddleware, validateBody(TrabajadorCreateSchema), trabajadorController.create);
+router.get('/:id', authMiddleware, validateParams(IdParamSchema), trabajadorController.getById);
+router.put('/:id', authMiddleware, validateParams(IdParamSchema), validateBody(TrabajadorUpdateSchema), trabajadorController.update);
+router.delete('/:id', authMiddleware, validateParams(IdParamSchema), trabajadorController.delete);
+router.get('/:id/cuadrillas', authMiddleware, validateParams(IdParamSchema), trabajadorController.getWithCuadrillas);
 
 export default router;

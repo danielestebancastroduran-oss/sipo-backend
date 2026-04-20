@@ -1,6 +1,17 @@
+import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+import logger from "../utils/logger.js";
 
-const supabaseUrl = "https://umjdjcnfveylmbcamtgc.supabase.co";
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtamRqY25mdmV5bG1iY2FtdGdjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzY5NTk2NSwiZXhwIjoyMDg5MjcxOTY1fQ.mUrRA6rO9RCDQVe2wEnlD2e41dh-pUedegA8oh5S_9E";
+// Cargar variables de entorno
+dotenv.config();
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  logger.error("⚠️ Faltan variables de entorno: SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY");
+  logger.error("Asegúrate de tener un archivo .env con estas variables configuradas.");
+  process.exit(1);
+}
 
 export const supabase = createClient(supabaseUrl, supabaseKey);

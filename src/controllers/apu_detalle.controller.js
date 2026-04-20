@@ -1,4 +1,6 @@
 import { ApuDetalleService } from '../services/apu_detalle.service.js';
+import logger from '../utils/logger.js';
+import { formatPaginatedResponse } from '../utils/pagination.helper.js';
 
 export class ApuDetalleController {
   constructor() {
@@ -8,17 +10,20 @@ export class ApuDetalleController {
   // GET /api/apu-detalles
   getAll = async (req, res) => {
     try {
-      const detalles = await this.apuDetalleService.getAll();
-      res.json({
-        success: true,
-        data: detalles,
-        message: 'Detalles APU obtenidos correctamente'
-      });
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.apuDetalleService.getAll({ limit, offset, order });
+
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getAll detalles APU:', error);
+      logger.error('Error en getAll apu-detalles:', { error: error.message });
       res.status(500).json({
         success: false,
-        message: error.message || 'Error al obtener los detalles APU'
+        message: error.message || 'Error al obtener los detalles de APU'
       });
     }
   };
@@ -42,7 +47,7 @@ export class ApuDetalleController {
         message: 'Detalle APU obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getById detalle APU:', error);
+      logger.error('Error en getById detalle APU:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el detalle APU'
@@ -60,7 +65,7 @@ export class ApuDetalleController {
         message: 'Detalle APU creado correctamente'
       });
     } catch (error) {
-      console.error('Error en create detalle APU:', error);
+      logger.error('Error en create detalle APU:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear el detalle APU'
@@ -87,7 +92,7 @@ export class ApuDetalleController {
         message: 'Detalle APU actualizado correctamente'
       });
     } catch (error) {
-      console.error('Error en update detalle APU:', error);
+      logger.error('Error en update detalle APU:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar el detalle APU'
@@ -113,7 +118,7 @@ export class ApuDetalleController {
         message: 'Detalle APU eliminado correctamente'
       });
     } catch (error) {
-      console.error('Error en delete detalle APU:', error);
+      logger.error('Error en delete detalle APU:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar el detalle APU'
@@ -125,15 +130,17 @@ export class ApuDetalleController {
   getByPartida = async (req, res) => {
     try {
       const { partida_id } = req.params;
-      const detalles = await this.apuDetalleService.getByPartida(partida_id);
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.apuDetalleService.getByPartida(partida_id, { limit, offset, order });
       
-      res.json({
-        success: true,
-        data: detalles,
-        message: 'Detalles de la partida obtenidos correctamente'
-      });
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getByPartida detalles APU:', error);
+      logger.error('Error en getByPartida apu-detalles:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los detalles de la partida'
@@ -153,7 +160,7 @@ export class ApuDetalleController {
         message: 'Detalles por recurso obtenidos correctamente'
       });
     } catch (error) {
-      console.error('Error en getByRecurso detalles APU:', error);
+      logger.error('Error en getByRecurso detalles APU:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los detalles por recurso'
@@ -173,7 +180,7 @@ export class ApuDetalleController {
         message: 'Detalles por cuadrilla obtenidos correctamente'
       });
     } catch (error) {
-      console.error('Error en getByCuadrilla detalles APU:', error);
+      logger.error('Error en getByCuadrilla detalles APU:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los detalles por cuadrilla'
@@ -200,7 +207,7 @@ export class ApuDetalleController {
         message: 'Detalles APU creados correctamente en lote'
       });
     } catch (error) {
-      console.error('Error en createBatch detalles APU:', error);
+      logger.error('Error en createBatch detalles APU:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear los detalles APU en lote'
@@ -220,7 +227,7 @@ export class ApuDetalleController {
         message: 'Análisis de partida obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getAnalysisByPartida detalles APU:', error);
+      logger.error('Error en getAnalysisByPartida detalles APU:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al generar el análisis de la partida'
@@ -240,7 +247,7 @@ export class ApuDetalleController {
         message: 'Detalles de la obra obtenidos correctamente'
       });
     } catch (error) {
-      console.error('Error en getByObra detalles APU:', error);
+      logger.error('Error en getByObra detalles APU:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los detalles de la obra'
@@ -260,7 +267,7 @@ export class ApuDetalleController {
         message: 'Análisis de obra obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getAnalysisByObra detalles APU:', error);
+      logger.error('Error en getAnalysisByObra detalles APU:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al generar el análisis de la obra'

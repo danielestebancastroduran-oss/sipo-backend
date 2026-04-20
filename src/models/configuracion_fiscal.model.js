@@ -28,8 +28,7 @@ export class ConfiguracionFiscalModel {
       retencion_fuente: configuracion.retencion_fuente,
       ica_porcentaje: configuracion.ica_porcentaje,
       reteica_porcentaje: configuracion.reteica_porcentaje,
-      iva_porcentaje: configuracion.iva_porcentaje,
-      created_at: configuracion.created_at
+      iva_porcentaje: configuracion.iva_porcentaje
     };
   }
 

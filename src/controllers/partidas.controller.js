@@ -1,4 +1,6 @@
 import { PartidasService } from '../services/partidas.service.js';
+import logger from '../utils/logger.js';
+import { formatPaginatedResponse } from '../utils/pagination.helper.js';
 
 export class PartidasController {
   constructor() {
@@ -8,14 +10,17 @@ export class PartidasController {
   // GET /api/partidas
   getAll = async (req, res) => {
     try {
-      const partidas = await this.partidasService.getAll();
-      res.json({
-        success: true,
-        data: partidas,
-        message: 'Partidas obtenidas correctamente'
-      });
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.partidasService.getAll({ limit, offset, order });
+
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getAll partidas:', error);
+      logger.error('Error en getAll partidas:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las partidas'
@@ -42,7 +47,7 @@ export class PartidasController {
         message: 'Partida obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getById partida:', error);
+      logger.error('Error en getById partida:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la partida'
@@ -60,7 +65,7 @@ export class PartidasController {
         message: 'Partida creada correctamente'
       });
     } catch (error) {
-      console.error('Error en create partida:', error);
+      logger.error('Error en create partida:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear la partida'
@@ -87,7 +92,7 @@ export class PartidasController {
         message: 'Partida actualizada correctamente'
       });
     } catch (error) {
-      console.error('Error en update partida:', error);
+      logger.error('Error en update partida:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar la partida'
@@ -113,7 +118,7 @@ export class PartidasController {
         message: 'Partida eliminada correctamente'
       });
     } catch (error) {
-      console.error('Error en delete partida:', error);
+      logger.error('Error en delete partida:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar la partida'
@@ -133,7 +138,7 @@ export class PartidasController {
         message: 'Partidas de la obra obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getByObra partidas:', error);
+      logger.error('Error en getByObra partidas:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las partidas de la obra'
@@ -160,7 +165,7 @@ export class PartidasController {
         message: 'Partida con detalles obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getWithDetails partida:', error);
+      logger.error('Error en getWithDetails partida:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la partida con detalles'
@@ -180,7 +185,7 @@ export class PartidasController {
         message: 'Análisis de obra obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getAnalysisByObra partidas:', error);
+      logger.error('Error en getAnalysisByObra partidas:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al generar el análisis de la obra'

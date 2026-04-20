@@ -1,4 +1,5 @@
 import { AiuConfigService } from '../services/aiu_config.service.js';
+import logger from '../utils/logger.js';
 
 export class AiuConfigController {
   constructor() {
@@ -15,7 +16,7 @@ export class AiuConfigController {
         message: 'Configuraciones AIU obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getAll aiu-config:', error);
+      logger.error('Error en getAll aiu-config:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las configuraciones AIU'
@@ -42,7 +43,7 @@ export class AiuConfigController {
         message: 'Configuración AIU obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getById aiu-config:', error);
+      logger.error('Error en getById aiu-config:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la configuración AIU'
@@ -60,7 +61,7 @@ export class AiuConfigController {
         message: 'Configuración AIU creada correctamente'
       });
     } catch (error) {
-      console.error('Error en create aiu-config:', error);
+      logger.error('Error en create aiu-config:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear la configuración AIU'
@@ -87,7 +88,7 @@ export class AiuConfigController {
         message: 'Configuración AIU actualizada correctamente'
       });
     } catch (error) {
-      console.error('Error en update aiu-config:', error);
+      logger.error('Error en update aiu-config:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar la configuración AIU'
@@ -113,7 +114,7 @@ export class AiuConfigController {
         message: 'Configuración AIU eliminada correctamente'
       });
     } catch (error) {
-      console.error('Error en delete aiu-config:', error);
+      logger.error('Error en delete aiu-config:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar la configuración AIU'
@@ -133,7 +134,7 @@ export class AiuConfigController {
         message: 'Configuración AIU del usuario obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getByUsuario aiu-config:', error);
+      logger.error('Error en getByUsuario aiu-config:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la configuración AIU del usuario'
@@ -153,7 +154,7 @@ export class AiuConfigController {
         message: 'Configuración AIU guardada correctamente'
       });
     } catch (error) {
-      console.error('Error en upsertByUsuario aiu-config:', error);
+      logger.error('Error en upsertByUsuario aiu-config:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al guardar la configuración AIU'
@@ -182,7 +183,7 @@ export class AiuConfigController {
         message: 'Cálculo AIU realizado correctamente'
       });
     } catch (error) {
-      console.error('Error en calculateAiu aiu-config:', error);
+      logger.error('Error en calculateAiu aiu-config:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al calcular AIU'
@@ -192,20 +193,28 @@ export class AiuConfigController {
 
   // GET /api/aiu-config/default
   getDefaultConfig = async (req, res) => {
-    try {
-      const config = await this.aiuConfigService.getDefaultConfig();
-      
-      res.json({
-        success: true,
-        data: config,
-        message: 'Configuración AIU por defecto obtenida correctamente'
-      });
-    } catch (error) {
-      console.error('Error en getDefaultConfig aiu-config:', error);
-      res.status(500).json({
+  try {
+    const { usuario_id } = req.query; // 👈 clave
+
+    if (!usuario_id) {
+      return res.status(400).json({
         success: false,
-        message: error.message || 'Error al obtener la configuración AIU por defecto'
+        message: 'usuario_id es requerido'
       });
     }
-  };
+
+    const config = await this.aiuConfigService.getDefaultConfig(usuario_id);
+
+    res.json({
+      success: true,
+      data: config
+    });
+  } catch (error) {
+    logger.error('Error en getDefaultConfig aiu-config:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 }
+};

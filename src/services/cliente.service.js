@@ -2,16 +2,28 @@ import { supabase } from '../config/db.js';
 import { ClienteModel } from '../models/cliente.model.js';
 import { v4 as uuidv4 } from 'uuid';
 
+import { getPaginationRange } from '../utils/pagination.helper.js';
+
+// Función para sanitizar input de búsquedas ilike
+function sanitizeSearchTerm(term) {
+  if (!term || typeof term !== 'string') return '';
+  return term.replace(/[%_\\]/g, '\\$&');
+}
+
 export class ClienteService {
-  async getAll() {
+  async getAll(options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('cliente')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener clientes: ${error.message}`);
     }
@@ -60,7 +72,7 @@ export class ClienteService {
 
   async update(id, clienteData) {
     try {
-      const cliente = new ClienteModel({ ...clienteData, id });
+      const cliente = new ClienteModel(clienteData);
       const validationErrors = cliente.validate();
       
       if (validationErrors.length > 0) {
@@ -71,11 +83,10 @@ export class ClienteService {
         .from('cliente')
         .update(ClienteModel.toDatabase(cliente))
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data[0]; // Devolver el primer elemento del array
     } catch (error) {
       throw new Error(`Error al actualizar cliente: ${error.message}`);
     }
@@ -83,6 +94,10 @@ export class ClienteService {
 
   async delete(id) {
     try {
+      // Verificar que el cliente existe antes de eliminar
+      const existing = await this.getById(id);
+      if (!existing) return false;
+
       const { error } = await supabase
         .from('cliente')
         .delete()
@@ -95,16 +110,20 @@ export class ClienteService {
     }
   }
 
-  async getByUsuario(usuario_id) {
+  async getByUsuario(usuario_id, options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('cliente')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('usuario_id', usuario_id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener clientes del usuario: ${error.message}`);
     }
@@ -127,11 +146,12 @@ export class ClienteService {
 
   async searchByNombre(usuario_id, searchTerm) {
     try {
+      const sanitized = sanitizeSearchTerm(searchTerm);
       const { data, error } = await supabase
         .from('cliente')
         .select('*')
         .eq('usuario_id', usuario_id)
-        .ilike('nombre', `%${searchTerm}%`)
+        .ilike('nombre', `%${sanitized}%`)
         .order('nombre', { ascending: true });
 
       if (error) throw error;

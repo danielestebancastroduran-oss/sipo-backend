@@ -4,8 +4,8 @@ export class CostosIndirectosModel {
     this.obra_id = data.obra_id || null;
     this.tipo = data.tipo || 'administracion';
     this.descripcion = data.descripcion || '';
-    this.porcentaje = data.porcentaje || 0;
-    this.valor = data.valor || 0;
+    this.porcentaje = data.porcentaje ?? 0;
+    this.valor = data.valor ?? 0;
     this.created_at = data.created_at || new Date();
   }
 
@@ -20,8 +20,7 @@ export class CostosIndirectosModel {
       tipo: costo.tipo,
       descripcion: costo.descripcion,
       porcentaje: costo.porcentaje,
-      valor: costo.valor,
-      created_at: costo.created_at
+      valor: costo.valor
     };
   }
 
