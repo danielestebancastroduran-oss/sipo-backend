@@ -1,5 +1,6 @@
 import { supabase } from '../config/db.js';
 import { ApuDetalleModel } from '../models/apu_detalle.model.js';
+import { getPaginationRange } from '../utils/pagination.helper.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export class ApuDetalleService {
@@ -119,20 +120,24 @@ export class ApuDetalleService {
     }
   }
 
-  async getByPartida(partida_id) {
+  async getByPartida(partida_id, options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('apu_detalle')
         .select(`
           *,
           recursos (nombre, unidad, tipo, precio_unitario),
-          cuadrillas (nombre)
-        `)
+          cuadrillas (nombre, rendimiento_base)
+        `, { count: 'exact' })
         .eq('partida_id', partida_id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener detalles de la partida: ${error.message}`);
     }

@@ -2,6 +2,8 @@ import { supabase } from '../config/db.js';
 import { ClienteModel } from '../models/cliente.model.js';
 import { v4 as uuidv4 } from 'uuid';
 
+import { getPaginationRange } from '../utils/pagination.helper.js';
+
 // Función para sanitizar input de búsquedas ilike
 function sanitizeSearchTerm(term) {
   if (!term || typeof term !== 'string') return '';
@@ -9,15 +11,19 @@ function sanitizeSearchTerm(term) {
 }
 
 export class ClienteService {
-  async getAll() {
+  async getAll(options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('cliente')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener clientes: ${error.message}`);
     }
@@ -104,16 +110,20 @@ export class ClienteService {
     }
   }
 
-  async getByUsuario(usuario_id) {
+  async getByUsuario(usuario_id, options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('cliente')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('usuario_id', usuario_id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener clientes del usuario: ${error.message}`);
     }

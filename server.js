@@ -7,6 +7,10 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
+import logger from "./src/utils/logger.js";
+import { secrets } from "./src/config/secrets.js";
+import { setupSwagger } from "./src/docs/swagger.js";
+
 import usuariosRoutes from "./src/routes/usuarios.routes.js";
 import obrasRoutes from "./src/routes/obras.routes.js";
 import partidasRoutes from "./src/routes/partidas.routes.js";
@@ -23,6 +27,9 @@ import empresaConfigRoutes from "./src/routes/empresa_config.routes.js";
 import preferenciasPdfRoutes from "./src/routes/preferencias_pdf.routes.js";
 import { errorHandler, notFoundHandler } from "./src/middleware/errorHandler.js";
 
+// Validar que todas las variables de entorno críticas existen
+secrets.validateAll();
+
 const app = express();
 
 // 🔒 Helmet — headers de seguridad HTTP
@@ -33,9 +40,7 @@ app.use(express.json());
 
 // 🔒 Configuración de CORS — soporta múltiples orígenes separados por coma
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
-    : ['http://localhost:5173'],
+  origin: secrets.getCorsOrigin().split(',').map(o => o.trim()),
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
@@ -66,6 +71,18 @@ const authLimiter = rateLimit({
   }
 });
 
+// 🩺 HEALTH CHECK (antes de las rutas protegidas)
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// 📄 SWAGGER / OPENAPI DOCS
+setupSwagger(app);
+
 // 🔹 RUTAS
 app.use("/api/usuarios", authLimiter, usuariosRoutes);
 app.use("/api/obras", obrasRoutes);
@@ -92,7 +109,7 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // 🔹 PUERTO
-const PORT = process.env.PORT || 3000;
+const PORT = secrets.getPort();
 
 // Exportar app para tests
 export { app };
@@ -100,6 +117,8 @@ export { app };
 // Solo iniciar servidor si no estamos en tests
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    console.log("Servidor corriendo en puerto", PORT);
+    logger.info(`🚀 Servidor corriendo en puerto ${PORT}`);
+    logger.info(`📄 Documentación API disponible en http://localhost:${PORT}/api/docs`);
+    logger.info(`🩺 Health check en http://localhost:${PORT}/health`);
   });
 }

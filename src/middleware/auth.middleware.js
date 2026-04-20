@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import logger from '../utils/logger.js';
 
 export const authMiddleware = (req, res, next) => {
   try {
@@ -13,7 +14,7 @@ export const authMiddleware = (req, res, next) => {
 
     const secret = process.env.JWT_SECRET;
     if (!secret) {
-      console.error('⚠️ JWT_SECRET no está configurado en las variables de entorno');
+      logger.error('⚠️ JWT_SECRET no está configurado en las variables de entorno');
       return res.status(500).json({
         success: false,
         message: 'Error de configuración del servidor'
@@ -24,6 +25,7 @@ export const authMiddleware = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
+    logger.warn(`Token inválido o expirado — ${req.method} ${req.originalUrl}`, { ip: req.ip });
     res.status(401).json({
       success: false,
       message: 'Token inválido o expirado'

@@ -1,4 +1,5 @@
 import { EmpresaConfigService } from '../services/empresa_config.service.js';
+import logger from '../utils/logger.js';
 
 export class EmpresaConfigController {
   constructor() {
@@ -15,7 +16,7 @@ export class EmpresaConfigController {
         message: 'Configuraciones de empresa obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getAll empresa-config:', error);
+      logger.error('Error en getAll empresa-config:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las configuraciones de empresa'
@@ -42,7 +43,7 @@ export class EmpresaConfigController {
         message: 'Configuración de empresa obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getById empresa-config:', error);
+      logger.error('Error en getById empresa-config:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la configuración de empresa'
@@ -64,7 +65,7 @@ export class EmpresaConfigController {
           : 'El usuario aún no tiene configuración de empresa'
       });
     } catch (error) {
-      console.error('Error en getByUsuario empresa-config:', error);
+      logger.error('Error en getByUsuario empresa-config:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la configuración de empresa'
@@ -82,7 +83,7 @@ export class EmpresaConfigController {
         message: 'Configuración de empresa creada correctamente'
       });
     } catch (error) {
-      console.error('Error en create empresa-config:', error);
+      logger.error('Error en create empresa-config:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear la configuración de empresa'
@@ -109,7 +110,7 @@ export class EmpresaConfigController {
         message: 'Configuración de empresa actualizada correctamente'
       });
     } catch (error) {
-      console.error('Error en update empresa-config:', error);
+      logger.error('Error en update empresa-config:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar la configuración de empresa'
@@ -135,7 +136,7 @@ export class EmpresaConfigController {
         message: 'Configuración de empresa eliminada correctamente'
       });
     } catch (error) {
-      console.error('Error en delete empresa-config:', error);
+      logger.error('Error en delete empresa-config:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar la configuración de empresa'
@@ -155,7 +156,7 @@ export class EmpresaConfigController {
         message: 'Configuración de empresa guardada correctamente'
       });
     } catch (error) {
-      console.error('Error en upsertByUsuario empresa-config:', error);
+      logger.error('Error en upsertByUsuario empresa-config:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al guardar la configuración de empresa'

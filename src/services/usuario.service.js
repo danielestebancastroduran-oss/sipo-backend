@@ -15,14 +15,19 @@ function sanitizeSearchTerm(term) {
 }
 
 export class UsuarioService {
-  async getAll() {
+  async getAll(options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('usuarios')
-        .select('*');
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data.map(usuario => UsuarioModel.fromDatabase(usuario));
+      return { data: data.map(usuario => UsuarioModel.fromDatabase(usuario)), count };
     } catch (error) {
       throw new Error(`Error al obtener usuarios: ${error.message}`);
     }

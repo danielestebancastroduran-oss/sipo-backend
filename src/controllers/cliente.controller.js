@@ -1,4 +1,6 @@
 import { ClienteService } from '../services/cliente.service.js';
+import logger from '../utils/logger.js';
+import { formatPaginatedResponse } from '../utils/pagination.helper.js';
 
 export class ClienteController {
   constructor() {
@@ -8,14 +10,17 @@ export class ClienteController {
   // GET /api/clientes
   getAll = async (req, res) => {
     try {
-      const clientes = await this.clienteService.getAll();
-      res.json({
-        success: true,
-        data: clientes,
-        message: 'Clientes obtenidos correctamente'
-      });
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.clienteService.getAll({ limit, offset, order });
+
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getAll clientes:', error);
+      logger.error('Error en getAll clientes:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los clientes'
@@ -42,7 +47,7 @@ export class ClienteController {
         message: 'Cliente obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getById cliente:', error);
+      logger.error('Error en getById cliente:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el cliente'
@@ -60,7 +65,7 @@ export class ClienteController {
         message: 'Cliente creado correctamente'
       });
     } catch (error) {
-      console.error('Error en create cliente:', error);
+      logger.error('Error en create cliente:', { error: error.message });
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear el cliente'
@@ -87,7 +92,7 @@ export class ClienteController {
         message: 'Cliente actualizado correctamente'
       });
     } catch (error) {
-      console.error('Error en update cliente:', error);
+      logger.error('Error en update cliente:', { error: error.message });
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar el cliente'
@@ -113,7 +118,7 @@ export class ClienteController {
         message: 'Cliente eliminado correctamente'
       });
     } catch (error) {
-      console.error('Error en delete cliente:', error);
+      logger.error('Error en delete cliente:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar el cliente'
@@ -125,15 +130,17 @@ export class ClienteController {
   getByUsuario = async (req, res) => {
     try {
       const { usuario_id } = req.params;
-      const clientes = await this.clienteService.getByUsuario(usuario_id);
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.clienteService.getByUsuario(usuario_id, { limit, offset, order });
       
-      res.json({
-        success: true,
-        data: clientes,
-        message: 'Clientes del usuario obtenidos correctamente'
-      });
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getByUsuario clientes:', error);
+      logger.error('Error en getByUsuario clientes:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los clientes del usuario'
@@ -153,7 +160,7 @@ export class ClienteController {
         message: 'Cliente por NIT obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getByNit cliente:', error);
+      logger.error('Error en getByNit cliente:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el cliente por NIT'
@@ -182,7 +189,7 @@ export class ClienteController {
         message: 'Búsqueda de clientes completada correctamente'
       });
     } catch (error) {
-      console.error('Error en searchByNombre clientes:', error);
+      logger.error('Error en searchByNombre clientes:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al buscar clientes'

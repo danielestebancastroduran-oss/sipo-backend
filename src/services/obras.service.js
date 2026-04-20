@@ -1,11 +1,15 @@
 import { supabase } from '../config/db.js';
 import { ObraModel } from '../models/obras.model.js';
 import { v4 as uuidv4 } from 'uuid';
+import { getPaginationRange } from '../utils/pagination.helper.js';
 
 export class ObrasService {
-  async getAll() {
+  async getAll(options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('obras')
         .select(`
           *,
@@ -13,11 +17,12 @@ export class ObrasService {
           cliente (nombre, nit, telefono, correo),
           departamentos (nombre, codigo_dane),
           municipios (nombre, codigo_dane)
-        `)
-        .order('created_at', { ascending: false });
+        `, { count: 'exact' })
+        .order('created_at', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener obras: ${error.message}`);
     }
@@ -116,21 +121,25 @@ export class ObrasService {
     }
   }
 
-  async getByUsuario(usuario_id) {
+  async getByUsuario(usuario_id, options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('obras')
         .select(`
           *,
           cliente (nombre, nit, telefono, correo),
           departamentos (nombre, codigo_dane),
           municipios (nombre, codigo_dane)
-        `)
+        `, { count: 'exact' })
         .eq('usuario_id', usuario_id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener obras del usuario: ${error.message}`);
     }
