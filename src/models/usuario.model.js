@@ -51,10 +51,6 @@ export class UsuarioModel {
       errors.push('El nombre es requerido');
     }
     
-    if (!this.apellido || this.apellido.trim() === '') {
-      errors.push('El apellido es requerido');
-    }
-    
     if (!this.correo || this.correo.trim() === '') {
       errors.push('El correo es requerido');
     } else if (!this.isValidEmail(this.correo)) {
@@ -63,6 +59,10 @@ export class UsuarioModel {
     
     // No validar contraseña aquí, el service se encarga de encriptarla
     
+    if (!this.rol) {
+      this.rol = 'ingeniero';
+    }
+
     const rolesValidos = ['arquitecto', 'ingeniero', 'residente'];
     if (this.rol && !rolesValidos.includes(this.rol)) {
       errors.push('El rol debe ser: arquitecto, ingeniero o residente');

@@ -38,9 +38,17 @@ export class UsuarioController {
   // POST /api/usuarios/login - LOGIN
   login = async (req, res) => {
     try {
-      const { correo, password_hash } = req.body;
+      const { correo, password_hash, password } = req.body;
+      const plainPassword = password || password_hash;
+
+      if (!correo || !plainPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Correo y contraseña son requeridos'
+        });
+      }
       
-      const usuario = await this.usuarioService.login(correo, password_hash);
+      const usuario = await this.usuarioService.login(correo, plainPassword);
       
       res.json({
         success: true,
