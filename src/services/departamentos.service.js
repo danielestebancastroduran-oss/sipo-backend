@@ -1,4 +1,5 @@
 import { supabase } from '../config/db.js';
+import { getPaginationRange } from '../utils/pagination.helper.js';
 import { DepartamentoModel } from '../models/departamentos.model.js';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -9,15 +10,19 @@ function sanitizeSearchTerm(term) {
 }
 
 export class DepartamentosService {
-  async getAll() {
+  async getAll(options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'asc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('departamentos')
-        .select('*')
-        .order('nombre', { ascending: true });
+        .select('*', { count: 'exact' })
+        .order('nombre', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener departamentos: ${error.message}`);
     }

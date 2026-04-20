@@ -1,6 +1,13 @@
 import express from 'express';
 import { ApuDetalleController } from '../controllers/apu_detalle.controller.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
+import {
+  validateBody,
+  validateParams,
+  IdParamSchema,
+  ApuDetalleCreateSchema,
+  ApuDetalleUpdateSchema
+} from '../middleware/validation.js';
 
 const router = express.Router();
 const apuDetalleController = new ApuDetalleController();
@@ -16,9 +23,9 @@ router.post('/batch', authMiddleware, apuDetalleController.createBatch);
 
 // CRUD BÁSICO
 router.get('/', authMiddleware, apuDetalleController.getAll);
-router.post('/', authMiddleware, apuDetalleController.create);
-router.get('/:id', authMiddleware, apuDetalleController.getById);
-router.put('/:id', authMiddleware, apuDetalleController.update);
-router.delete('/:id', authMiddleware, apuDetalleController.delete);
+router.post('/', authMiddleware, validateBody(ApuDetalleCreateSchema), apuDetalleController.create);
+router.get('/:id', authMiddleware, validateParams(IdParamSchema), apuDetalleController.getById);
+router.put('/:id', authMiddleware, validateParams(IdParamSchema), validateBody(ApuDetalleUpdateSchema), apuDetalleController.update);
+router.delete('/:id', authMiddleware, validateParams(IdParamSchema), apuDetalleController.delete);
 
 export default router;

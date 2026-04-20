@@ -1,6 +1,7 @@
 import { supabase } from '../config/db.js';
 import { MunicipioModel } from '../models/municipios.model.js';
 import { v4 as uuidv4 } from 'uuid';
+import { getPaginationRange } from '../utils/pagination.helper.js';
 
 // Función para sanitizar input de búsquedas ilike
 function sanitizeSearchTerm(term) {
@@ -9,18 +10,19 @@ function sanitizeSearchTerm(term) {
 }
 
 export class MunicipiosService {
-  async getAll() {
+  async getAll(options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'asc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('municipios')
-        .select(`
-          *,
-          departamentos (nombre, codigo_dane)
-        `)
-        .order('nombre', { ascending: true });
+        .select('*', { count: 'exact' })
+        .order('nombre', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener municipios: ${error.message}`);
     }
@@ -117,17 +119,20 @@ export class MunicipiosService {
     }
   }
 
-  async getByDepartamento(departamento_id) {
+  async getByDepartamento(departamento_id, options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 100, offset = 0, order = 'asc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('municipios')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('departamento_id', departamento_id)
-        .order('es_capital', { ascending: false })
-        .order('nombre', { ascending: true });
+        .order('nombre', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener municipios del departamento: ${error.message}`);
     }

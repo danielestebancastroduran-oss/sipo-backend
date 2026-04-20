@@ -1,4 +1,5 @@
 import { PdfService } from '../services/pdf.service.js';
+import logger from '../utils/logger.js';
 
 const pdfService = new PdfService();
 
@@ -22,7 +23,7 @@ export const generateObraPdf = async (req, res) => {
     // Pipe el documento al response
     doc.pipe(res);
   } catch (error) {
-    console.error('Error al generar PDF:', error);
+    logger.error('Error al generar PDF:', error);
 
     // Si ya se enviaron headers, no podemos cambiar a JSON
     if (res.headersSent) return;

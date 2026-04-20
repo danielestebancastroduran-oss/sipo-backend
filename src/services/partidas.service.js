@@ -1,20 +1,22 @@
 import { supabase } from '../config/db.js';
 import { PartidaModel } from '../models/partidas.model.js';
 import { v4 as uuidv4 } from 'uuid';
+import { getPaginationRange } from '../utils/pagination.helper.js';
 
 export class PartidasService {
-  async getAll() {
+  async getAll(options = {}) {
     try {
-      const { data, error } = await supabase
+      const { limit = 50, offset = 0, order = 'desc' } = options;
+      const { from, to } = getPaginationRange(limit, offset);
+
+      const { data, error, count } = await supabase
         .from('partidas')
-        .select(`
-          *,
-          obras (nombre, descripcion, estado)
-        `)
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: order === 'asc' })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return { data, count };
     } catch (error) {
       throw new Error(`Error al obtener partidas: ${error.message}`);
     }

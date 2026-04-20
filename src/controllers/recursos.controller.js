@@ -1,4 +1,6 @@
 import { RecursosService } from '../services/recursos.service.js';
+import logger from '../utils/logger.js';
+import { formatPaginatedResponse } from '../utils/pagination.helper.js';
 
 export class RecursosController {
   constructor() {
@@ -8,14 +10,17 @@ export class RecursosController {
   // GET /api/recursos
   getAll = async (req, res) => {
     try {
-      const recursos = await this.recursosService.getAll();
-      res.json({
-        success: true,
-        data: recursos,
-        message: 'Recursos obtenidos correctamente'
-      });
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.recursosService.getAll({ limit, offset, order });
+
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getAll recursos:', error);
+      logger.error('Error en getAll recursos:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los recursos'
@@ -42,7 +47,7 @@ export class RecursosController {
         message: 'Recurso obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getById recurso:', error);
+      logger.error('Error en getById recurso:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el recurso'
@@ -60,7 +65,7 @@ export class RecursosController {
         message: 'Recurso creado correctamente'
       });
     } catch (error) {
-      console.error('Error en create recurso:', error);
+      logger.error('Error en create recurso:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear el recurso'
@@ -87,7 +92,7 @@ export class RecursosController {
         message: 'Recurso actualizado correctamente'
       });
     } catch (error) {
-      console.error('Error en update recurso:', error);
+      logger.error('Error en update recurso:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar el recurso'
@@ -113,7 +118,7 @@ export class RecursosController {
         message: 'Recurso eliminado correctamente'
       });
     } catch (error) {
-      console.error('Error en delete recurso:', error);
+      logger.error('Error en delete recurso:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar el recurso'
@@ -125,15 +130,17 @@ export class RecursosController {
   getByUsuario = async (req, res) => {
     try {
       const { usuario_id } = req.params;
-      const recursos = await this.recursosService.getByUsuario(usuario_id);
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.recursosService.getByUsuario(usuario_id, { limit, offset, order });
       
-      res.json({
-        success: true,
-        data: recursos,
-        message: 'Recursos del usuario obtenidos correctamente'
-      });
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getByUsuario recursos:', error);
+      logger.error('Error en getByUsuario recursos:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los recursos del usuario'
@@ -153,7 +160,7 @@ export class RecursosController {
         message: 'Recursos por tipo obtenidos correctamente'
       });
     } catch (error) {
-      console.error('Error en getByTipo recursos:', error);
+      logger.error('Error en getByTipo recursos:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener los recursos por tipo'
@@ -182,7 +189,7 @@ export class RecursosController {
         message: 'Búsqueda de recursos completada correctamente'
       });
     } catch (error) {
-      console.error('Error en searchByNombre recursos:', error);
+      logger.error('Error en searchByNombre recursos:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al buscar recursos'
@@ -209,7 +216,7 @@ export class RecursosController {
         message: 'Recurso con estadísticas de uso obtenido correctamente'
       });
     } catch (error) {
-      console.error('Error en getWithUsage recurso:', error);
+      logger.error('Error en getWithUsage recurso:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener el recurso con uso'

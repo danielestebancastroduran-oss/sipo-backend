@@ -1,4 +1,5 @@
 import { PreferenciasPdfService } from '../services/preferencias_pdf.service.js';
+import logger from '../utils/logger.js';
 
 export class PreferenciasPdfController {
   constructor() {
@@ -15,7 +16,7 @@ export class PreferenciasPdfController {
         message: 'Preferencias PDF obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getAll preferencias-pdf:', error);
+      logger.error('Error en getAll preferencias-pdf:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las preferencias PDF'
@@ -42,7 +43,7 @@ export class PreferenciasPdfController {
         message: 'Preferencias PDF obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getById preferencias-pdf:', error);
+      logger.error('Error en getById preferencias-pdf:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las preferencias PDF'
@@ -62,7 +63,7 @@ export class PreferenciasPdfController {
         message: 'Preferencias PDF del usuario obtenidas correctamente'
       });
     } catch (error) {
-      console.error('Error en getByUsuario preferencias-pdf:', error);
+      logger.error('Error en getByUsuario preferencias-pdf:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las preferencias PDF del usuario'
@@ -80,7 +81,7 @@ export class PreferenciasPdfController {
         message: 'Preferencias PDF creadas correctamente'
       });
     } catch (error) {
-      console.error('Error en create preferencias-pdf:', error);
+      logger.error('Error en create preferencias-pdf:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear las preferencias PDF'
@@ -107,7 +108,7 @@ export class PreferenciasPdfController {
         message: 'Preferencias PDF actualizadas correctamente'
       });
     } catch (error) {
-      console.error('Error en update preferencias-pdf:', error);
+      logger.error('Error en update preferencias-pdf:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar las preferencias PDF'
@@ -133,7 +134,7 @@ export class PreferenciasPdfController {
         message: 'Preferencias PDF eliminadas correctamente'
       });
     } catch (error) {
-      console.error('Error en delete preferencias-pdf:', error);
+      logger.error('Error en delete preferencias-pdf:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar las preferencias PDF'
@@ -153,7 +154,7 @@ export class PreferenciasPdfController {
         message: 'Preferencias PDF guardadas correctamente'
       });
     } catch (error) {
-      console.error('Error en upsertByUsuario preferencias-pdf:', error);
+      logger.error('Error en upsertByUsuario preferencias-pdf:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al guardar las preferencias PDF'

@@ -1,4 +1,6 @@
 import { CuadrillasService } from '../services/cuadrillas.service.js';
+import logger from '../utils/logger.js';
+import { formatPaginatedResponse } from '../utils/pagination.helper.js';
 
 export class CuadrillasController {
   constructor() {
@@ -8,14 +10,17 @@ export class CuadrillasController {
   // GET /api/cuadrillas
   getAll = async (req, res) => {
     try {
-      const cuadrillas = await this.cuadrillasService.getAll();
-      res.json({
-        success: true,
-        data: cuadrillas,
-        message: 'Cuadrillas obtenidas correctamente'
-      });
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.cuadrillasService.getAll({ limit, offset, order });
+
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getAll cuadrillas:', error);
+      logger.error('Error en getAll cuadrillas:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las cuadrillas'
@@ -42,7 +47,7 @@ export class CuadrillasController {
         message: 'Cuadrilla obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getById cuadrilla:', error);
+      logger.error('Error en getById cuadrilla:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la cuadrilla'
@@ -60,7 +65,7 @@ export class CuadrillasController {
         message: 'Cuadrilla creada correctamente'
       });
     } catch (error) {
-      console.error('Error en create cuadrilla:', error);
+      logger.error('Error en create cuadrilla:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al crear la cuadrilla'
@@ -87,7 +92,7 @@ export class CuadrillasController {
         message: 'Cuadrilla actualizada correctamente'
       });
     } catch (error) {
-      console.error('Error en update cuadrilla:', error);
+      logger.error('Error en update cuadrilla:', error);
       res.status(400).json({
         success: false,
         message: error.message || 'Error al actualizar la cuadrilla'
@@ -113,7 +118,7 @@ export class CuadrillasController {
         message: 'Cuadrilla eliminada correctamente'
       });
     } catch (error) {
-      console.error('Error en delete cuadrilla:', error);
+      logger.error('Error en delete cuadrilla:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al eliminar la cuadrilla'
@@ -125,15 +130,17 @@ export class CuadrillasController {
   getByUsuario = async (req, res) => {
     try {
       const { usuario_id } = req.params;
-      const cuadrillas = await this.cuadrillasService.getByUsuario(usuario_id);
+      const { limit, offset, order } = req.query;
+      const { data, count } = await this.cuadrillasService.getByUsuario(usuario_id, { limit, offset, order });
       
-      res.json({
-        success: true,
-        data: cuadrillas,
-        message: 'Cuadrillas del usuario obtenidas correctamente'
-      });
+      res.json(formatPaginatedResponse(
+        data,
+        count,
+        limit,
+        offset
+      ));
     } catch (error) {
-      console.error('Error en getByUsuario cuadrillas:', error);
+      logger.error('Error en getByUsuario cuadrillas:', { error: error.message });
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener las cuadrillas del usuario'
@@ -160,7 +167,7 @@ export class CuadrillasController {
         message: 'Cuadrilla con trabajadores obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getWithTrabajadores cuadrilla:', error);
+      logger.error('Error en getWithTrabajadores cuadrilla:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la cuadrilla con trabajadores'
@@ -187,7 +194,7 @@ export class CuadrillasController {
         message: 'Cuadrilla con estadísticas de uso obtenida correctamente'
       });
     } catch (error) {
-      console.error('Error en getWithUsage cuadrilla:', error);
+      logger.error('Error en getWithUsage cuadrilla:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la cuadrilla con uso'
@@ -216,7 +223,7 @@ export class CuadrillasController {
         message: 'Búsqueda de cuadrillas completada correctamente'
       });
     } catch (error) {
-      console.error('Error en searchByNombre cuadrillas:', error);
+      logger.error('Error en searchByNombre cuadrillas:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Error al buscar cuadrillas'
