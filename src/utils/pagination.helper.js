@@ -26,6 +26,7 @@ export const getPaginationRange = (limit = 50, offset = 0) => {
  */
 export const formatPaginatedResponse = (data, count, limit, offset) => {
   return {
+    success: true,
     data,
     pagination: {
       total: count || 0,
