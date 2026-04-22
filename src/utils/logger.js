@@ -3,11 +3,11 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const currentFileName = fileURLToPath(import.meta.url);
+const currentDirName = path.dirname(currentFileName);
 
 // Directorio de logs en la raíz del proyecto
-const LOG_DIR = path.join(__dirname, '..', '..', 'logs');
+const LOG_DIR = path.join(currentDirName, '..', '..', 'logs');
 
 // Determinar si estamos en producción
 const isProduction = process.env.NODE_ENV === 'production';

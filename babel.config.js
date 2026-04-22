@@ -9,5 +9,5 @@ export default {
       }
     ]
   ],
-  plugins: []
+  plugins: ['babel-plugin-transform-import-meta']
 };
