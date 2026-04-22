@@ -14,7 +14,7 @@ import { z } from 'zod';
 export const validateBody = (schema) => (req, res, next) => {
   const result = schema.safeParse(req.body);
   if (!result.success) {
-    const errors = result.error.errors.map(e => e.message);
+    const errors = result.error.issues.map(e => e.message);
     return res.status(400).json({
       success: false,
       message: 'Datos de entrada inválidos',
@@ -32,7 +32,7 @@ export const validateBody = (schema) => (req, res, next) => {
 export const validateParams = (schema) => (req, res, next) => {
   const result = schema.safeParse(req.params);
   if (!result.success) {
-    const errors = result.error.errors.map(e => e.message);
+    const errors = result.error.issues.map(e => e.message);
     return res.status(400).json({
       success: false,
       message: 'Parámetros de ruta inválidos',
@@ -49,7 +49,7 @@ export const validateParams = (schema) => (req, res, next) => {
 export const validateQuery = (schema) => (req, res, next) => {
   const result = schema.safeParse(req.query);
   if (!result.success) {
-    const errors = result.error.errors.map(e => e.message);
+    const errors = result.error.issues.map(e => e.message);
     return res.status(400).json({
       success: false,
       message: 'Parámetros de consulta inválidos',
@@ -130,7 +130,7 @@ export const ObraCreateSchema = z.object({
   municipio_id: uuidSchema,
   nombre: z.string().min(1, 'El nombre de la obra es requerido').max(200),
   descripcion: z.string().max(1000).default(''),
-  tipo: z.enum(['residencial', 'comercial', 'industrial']).default('residencial'),
+  tipo: z.enum(['residencial', 'comercial', 'industrial', 'remodelacion']).default('residencial'),
   estado: z.enum(['borrador', 'activo', 'finalizado']).default('borrador'),
   fecha_inicio: z.string().datetime().optional().nullable()
 });
