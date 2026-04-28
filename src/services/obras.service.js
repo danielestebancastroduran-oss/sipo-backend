@@ -130,16 +130,19 @@ export class ObrasService {
         .from('obras')
         .select(`
           *,
-          cliente (nombre, nit, telefono, correo),
-          departamentos (nombre, codigo_dane),
-          municipios (nombre, codigo_dane)
+          cliente!left (nombre, correo),
+          departamentos!left (nombre),
+          municipios!left (nombre)
         `, { count: 'exact' })
         .eq('usuario_id', usuario_id)
         .order('created_at', { ascending: order === 'asc' })
         .range(from, to);
 
-      if (error) throw error;
-      return { data, count };
+      if (error) {
+        console.error('Supabase Error in getByUsuario:', error);
+        throw error;
+      }
+      return { data: data || [], count: count || 0 };
     } catch (error) {
       throw new Error(`Error al obtener obras del usuario: ${error.message}`);
     }
@@ -224,7 +227,7 @@ export class ObrasService {
             unidad,
             cantidad,
             created_at,
-            apu_detalles (
+            apu_detalle (
               id,
               cantidad,
               precio_unitario,
@@ -232,6 +235,13 @@ export class ObrasService {
               recursos (nombre, unidad, tipo),
               cuadrillas (nombre)
             )
+          ),
+          costos_indirectos (
+            id,
+            tipo,
+            descripcion,
+            porcentaje,
+            valor
           )
         `)
         .eq('id', id)
@@ -243,12 +253,12 @@ export class ObrasService {
       if (data && data.partidas) {
         let totalDirecto = 0;
         data.partidas.forEach(partida => {
-          if (partida.apu_detalles) {
-            const subtotalPartida = partida.apu_detalles.reduce((sum, detalle) => 
-              sum + (detalle.cantidad * detalle.precio_unitario), 0);
-            partida.subtotal = subtotalPartida;
-            totalDirecto += subtotalPartida;
-          }
+          const apuList = partida.apu_detalle || [];
+          const subtotalPartida = apuList.reduce((sum, detalle) => 
+            sum + (Number(detalle.cantidad) * Number(detalle.precio_unitario)), 0);
+          partida.valor_unitario = subtotalPartida; // El unitario es la suma del APU
+          partida.total = subtotalPartida * (Number(partida.cantidad) || 0);
+          totalDirecto += partida.total;
         });
         data.total_directo = totalDirecto;
       }

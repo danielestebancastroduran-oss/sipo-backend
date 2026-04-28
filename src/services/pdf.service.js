@@ -60,25 +60,25 @@ export class PdfService {
     );
 
     // 5. Configuración AIU del usuario
-    const { data: aiuConfig } = await supabase
+    const { data: aiuConfig, error: aiuError } = await supabase
       .from('aiu_config')
       .select('*')
       .eq('usuario_id', usuario_id)
-      .single();
+      .maybeSingle();
 
     // 6. Configuración de empresa del usuario
-    const { data: empresa } = await supabase
+    const { data: empresa, error: empresaError } = await supabase
       .from('empresa_config')
       .select('*')
       .eq('usuario_id', usuario_id)
-      .single();
+      .maybeSingle();
 
     // 7. Preferencias PDF del usuario
-    const { data: prefsData } = await supabase
+    const { data: prefsData, error: prefsError } = await supabase
       .from('preferencias_pdf')
       .select('*')
       .eq('usuario_id', usuario_id)
-      .single();
+      .maybeSingle();
 
     const preferencias = prefsData || {
       mostrar_logo: true,
@@ -89,7 +89,14 @@ export class PdfService {
       incluir_retenciones: false,
     };
 
-    return { obra, cliente, partidas: partidasConApu, aiuConfig, empresa, preferencias };
+    return { 
+      obra, 
+      cliente, 
+      partidas: partidasConApu, 
+      aiuConfig: aiuConfig || { imprevistos: 5, utilidad: 5, iva_sobre_utilidad: 19 }, 
+      empresa: empresa || { nombre_empresa: 'SIPO - Sistema de Presupuestación' }, 
+      preferencias 
+    };
   }
 
   // ─── Calcular totales ─────────────────────────────────────────────────────
@@ -127,9 +134,15 @@ export class PdfService {
   }
 
   // ─── GENERAR PDF ──────────────────────────────────────────────────────────
-  async generatePresupuestoPdf(obra_id, usuario_id) {
+  async generatePresupuestoPdf(obra_id, usuario_id, overrideDetailLevel = null) {
     const { obra, cliente, partidas, aiuConfig, empresa, preferencias } =
       await this.getObraData(obra_id, usuario_id);
+
+    if (overrideDetailLevel) {
+      preferencias.nivel_detalle = overrideDetailLevel === 'apu' ? 'detallado' : 
+                                   overrideDetailLevel === 'ejecutivo' ? 'resumen' : 'estandar';
+      preferencias.incluir_apu = overrideDetailLevel === 'apu';
+    }
 
     const totales = this.calcularTotales(partidas, aiuConfig);
 

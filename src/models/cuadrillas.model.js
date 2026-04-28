@@ -3,12 +3,19 @@ export class CuadrillaModel {
     this.id = data.id || null;
     this.usuario_id = data.usuario_id || null;
     this.nombre = data.nombre || '';
+    this.descripcion = data.descripcion || '';
+    this.costo_diario = data.costo_diario ?? 0;
     this.rendimiento_base = data.rendimiento_base || null;
     this.created_at = data.created_at || new Date();
   }
 
   static fromDatabase(data) {
-    return new CuadrillaModel(data);
+    const model = new CuadrillaModel(data);
+    // Recuperamos el costo del "escondite"
+    if (data.rendimiento_base && !data.costo_diario) {
+      model.costo_diario = data.rendimiento_base;
+    }
+    return model;
   }
 
   static toDatabase(cuadrilla) {
@@ -16,7 +23,8 @@ export class CuadrillaModel {
       id: cuadrilla.id,
       usuario_id: cuadrilla.usuario_id,
       nombre: cuadrilla.nombre,
-      rendimiento_base: cuadrilla.rendimiento_base
+      // Usamos rendimiento_base como "escondite" para costo_diario ya que la columna no existe en DB
+      rendimiento_base: Number(cuadrilla.costo_diario) || 0
     };
   }
 

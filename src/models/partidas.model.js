@@ -6,6 +6,7 @@ export class PartidaModel {
     this.descripcion = data.descripcion || '';
     this.unidad = data.unidad || '';
     this.cantidad = data.cantidad ?? 0;
+    this.valor_unitario = data.valor_unitario ?? 0;
     this.created_at = data.created_at || new Date();
   }
 
