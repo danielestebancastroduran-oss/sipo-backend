@@ -40,10 +40,9 @@ app.use(express.json());
 
 // 🔒 Configuración de CORS — soporta múltiples orígenes separados por coma
 const corsOptions = {
-  origin: true, // Permitir cualquier origen temporalmente para debug
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  origin: secrets.getCorsOrigin().split(',').map(o => o.trim()),
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
 };
 app.use(cors(corsOptions));
 

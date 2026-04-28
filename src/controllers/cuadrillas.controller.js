@@ -1,5 +1,4 @@
 import { CuadrillasService } from '../services/cuadrillas.service.js';
-import { CuadrillaModel } from '../models/cuadrillas.model.js';
 import logger from '../utils/logger.js';
 import { formatPaginatedResponse } from '../utils/pagination.helper.js';
 
@@ -15,7 +14,7 @@ export class CuadrillasController {
       const { data, count } = await this.cuadrillasService.getAll({ limit, offset, order });
 
       res.json(formatPaginatedResponse(
-        data.map(c => CuadrillaModel.fromDatabase(c)),
+        data,
         count,
         limit,
         offset
@@ -44,7 +43,7 @@ export class CuadrillasController {
 
       res.json({
         success: true,
-        data: CuadrillaModel.fromDatabase(cuadrilla),
+        data: cuadrilla,
         message: 'Cuadrilla obtenida correctamente'
       });
     } catch (error) {
@@ -62,7 +61,7 @@ export class CuadrillasController {
       const cuadrilla = await this.cuadrillasService.create(req.body);
       res.status(201).json({
         success: true,
-        data: CuadrillaModel.fromDatabase(cuadrilla),
+        data: cuadrilla,
         message: 'Cuadrilla creada correctamente'
       });
     } catch (error) {
@@ -89,7 +88,7 @@ export class CuadrillasController {
 
       res.json({
         success: true,
-        data: CuadrillaModel.fromDatabase(cuadrilla),
+        data: cuadrilla,
         message: 'Cuadrilla actualizada correctamente'
       });
     } catch (error) {
@@ -135,7 +134,7 @@ export class CuadrillasController {
       const { data, count } = await this.cuadrillasService.getByUsuario(usuario_id, { limit, offset, order });
       
       res.json(formatPaginatedResponse(
-        data.map(c => CuadrillaModel.fromDatabase(c)),
+        data,
         count,
         limit,
         offset
@@ -153,20 +152,14 @@ export class CuadrillasController {
   getWithTrabajadores = async (req, res) => {
     try {
       const { id } = req.params;
-      const cuadrillaRaw = await this.cuadrillasService.getWithTrabajadores(id);
+      const cuadrilla = await this.cuadrillasService.getWithTrabajadores(id);
       
-      if (!cuadrillaRaw) {
+      if (!cuadrilla) {
         return res.status(404).json({
           success: false,
           message: 'Cuadrilla no encontrada'
         });
       }
-
-      const cuadrilla = CuadrillaModel.fromDatabase(cuadrillaRaw);
-      // Mantener los trabajadores en el objeto transformado
-      cuadrilla.cuadrilla_trabajadores = cuadrillaRaw.cuadrilla_trabajadores;
-      cuadrilla.total_trabajadores = cuadrillaRaw.total_trabajadores;
-      cuadrilla.total_salario_diario = cuadrillaRaw.total_salario_diario;
 
       res.json({
         success: true,
@@ -186,19 +179,14 @@ export class CuadrillasController {
   getWithUsage = async (req, res) => {
     try {
       const { id } = req.params;
-      const cuadrillaRaw = await this.cuadrillasService.getWithUsage(id);
+      const cuadrilla = await this.cuadrillasService.getWithUsage(id);
       
-      if (!cuadrillaRaw) {
+      if (!cuadrilla) {
         return res.status(404).json({
           success: false,
           message: 'Cuadrilla no encontrada'
         });
       }
-
-      const cuadrilla = CuadrillaModel.fromDatabase(cuadrillaRaw);
-      cuadrilla.apu_detalle = cuadrillaRaw.apu_detalle;
-      cuadrilla.total_usos = cuadrillaRaw.total_usos;
-      cuadrilla.total_valor = cuadrillaRaw.total_valor;
 
       res.json({
         success: true,
@@ -227,11 +215,11 @@ export class CuadrillasController {
         });
       }
 
-      const data = await this.cuadrillasService.searchByNombre(usuario_id, searchTerm);
+      const cuadrillas = await this.cuadrillasService.searchByNombre(usuario_id, searchTerm);
       
       res.json({
         success: true,
-        data: data.map(c => CuadrillaModel.fromDatabase(c)),
+        data: cuadrillas,
         message: 'Búsqueda de cuadrillas completada correctamente'
       });
     } catch (error) {

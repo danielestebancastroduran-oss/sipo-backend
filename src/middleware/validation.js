@@ -15,7 +15,6 @@ export const validateBody = (schema) => (req, res, next) => {
   const result = schema.safeParse(req.body);
   if (!result.success) {
     const errors = result.error.issues.map(e => e.message);
-    console.log('❌ VALIDATION ERROR:', errors, 'BODY:', req.body);
     return res.status(400).json({
       success: false,
       message: 'Datos de entrada inválidos',
@@ -144,8 +143,7 @@ export const PartidaCreateSchema = z.object({
   nombre: z.string().min(1, 'El nombre de la partida es requerido').max(200),
   descripcion: z.string().max(1000).default(''),
   unidad: z.string().min(1, 'La unidad es requerida').max(50),
-  cantidad: z.number().positive('La cantidad debe ser mayor a cero'),
-  valor_unitario: z.number().min(0, 'El valor unitario no puede ser negativo').default(0)
+  cantidad: z.number().positive('La cantidad debe ser mayor a cero')
 });
 
 export const PartidaUpdateSchema = PartidaCreateSchema.partial();
@@ -161,12 +159,11 @@ export const RecursoCreateSchema = z.object({
 
 export const RecursoUpdateSchema = RecursoCreateSchema.partial();
 
+// --- Cuadrilla ---
 export const CuadrillaCreateSchema = z.object({
   usuario_id: uuidSchema,
   nombre: z.string().min(1, 'El nombre de la cuadrilla es requerido').max(200),
-  descripcion: z.string().max(1000).optional().nullable(),
-  costo_diario: z.coerce.number().min(0, 'El costo diario no puede ser negativo').default(0),
-  rendimiento_base: z.coerce.number().positive('El rendimiento base debe ser mayor a cero').optional().nullable()
+  rendimiento_base: z.number().positive('El rendimiento base debe ser mayor a cero').optional().nullable()
 });
 
 export const CuadrillaUpdateSchema = CuadrillaCreateSchema.partial();
@@ -187,9 +184,9 @@ export const ApuDetalleCreateSchema = z.object({
   partida_id: uuidSchema,
   recurso_id: uuidSchema.optional().nullable(),
   cuadrilla_id: uuidSchema.optional().nullable(),
-  cantidad: z.number().min(0, 'La cantidad no puede ser negativa'),
-  precio_unitario: z.number().min(0, 'El precio unitario no puede ser negativo'),
-  rendimiento: z.number().min(0).optional().nullable()
+  cantidad: z.number().positive('La cantidad debe ser mayor a cero'),
+  precio_unitario: z.number().positive('El precio unitario debe ser mayor a cero'),
+  rendimiento: z.number().positive().optional().nullable()
 }).refine(
   (data) => data.recurso_id || data.cuadrilla_id,
   { message: 'Debe especificar un recurso_id o un cuadrilla_id' }
@@ -202,9 +199,9 @@ export const ApuDetalleUpdateSchema = z.object({
   partida_id: uuidSchema.optional(),
   recurso_id: uuidSchema.optional().nullable(),
   cuadrilla_id: uuidSchema.optional().nullable(),
-  cantidad: z.number().min(0).optional(),
-  precio_unitario: z.number().min(0).optional(),
-  rendimiento: z.number().min(0).optional().nullable()
+  cantidad: z.number().positive('La cantidad debe ser mayor a cero').optional(),
+  precio_unitario: z.number().positive('El precio unitario debe ser mayor a cero').optional(),
+  rendimiento: z.number().positive().optional().nullable()
 });
 
 // --- AIU Config ---
@@ -244,7 +241,7 @@ export const EmpresaConfigCreateSchema = z.object({
   direccion: z.string().max(300).default(''),
   departamento_id: uuidSchema.optional().nullable(),
   municipio_id: uuidSchema.optional().nullable(),
-  logo_url: z.string().default('')
+  logo_url: z.string().max(500).default('')
 });
 
 export const EmpresaConfigUpdateSchema = EmpresaConfigCreateSchema.partial();
