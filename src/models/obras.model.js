@@ -55,9 +55,9 @@ export class ObraModel {
       errors.push('El tipo de obra es requerido');
     }
     
-    const tiposValidos = ['residencial', 'comercial', 'industrial', 'remodelacion'];
+    const tiposValidos = ['residencial', 'comercial', 'industrial'];
     if (this.tipo && !tiposValidos.includes(this.tipo)) {
-      errors.push('El tipo de obra debe ser: residencial, comercial, industrial o remodelacion');
+      errors.push('El tipo de obra debe ser: residencial, comercial o industrial');
     }
     
     const estadosValidos = ['borrador', 'activo', 'finalizado'];
