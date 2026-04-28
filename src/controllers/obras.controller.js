@@ -133,8 +133,21 @@ export class ObrasController {
       const { limit, offset, order } = req.query;
       const { data, count } = await this.obrasService.getByUsuario(usuario_id, { limit, offset, order });
       
+      // Calcular el presupuesto total para cada obra sumando sus partidas
+      const obrasConTotal = await Promise.all((data || []).map(async (obra) => {
+        const obraCompleta = await this.obrasService.getWithPartidas(obra.id);
+        let total = 0;
+        if (obraCompleta && obraCompleta.partidas) {
+          obraCompleta.partidas.forEach(p => {
+            const subtotal = (p.apu_detalle || []).reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
+            total += (subtotal * p.cantidad);
+          });
+        }
+        return { ...obra, presupuesto_total: total };
+      }));
+      
       res.json(formatPaginatedResponse(
-        data,
+        obrasConTotal,
         count,
         limit,
         offset
@@ -231,6 +244,61 @@ export class ObrasController {
       res.status(500).json({
         success: false,
         message: error.message || 'Error al obtener la obra con partidas'
+      });
+    }
+  };
+
+  // POST /api/obras/:id/send-email
+  sendBudgetByEmail = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { detailLevel } = req.body;
+      const usuario_id = req.user?.id;
+      
+      const { MailService } = await import('../services/mail.service.js');
+      const { PdfService } = await import('../services/pdf.service.js');
+      
+      const mailService = new MailService();
+      const pdfService = new PdfService();
+      
+      const obra = await this.obrasService.getWithPartidas(id);
+      if (!obra || !obra.cliente?.correo) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'La obra no existe o el cliente no tiene un correo válido.' 
+        });
+      }
+
+      // Generar el PDF para enviarlo como adjunto
+      const doc = await pdfService.generatePresupuestoPdf(id, usuario_id, detailLevel);
+      
+      // Convertir el stream del PDF a Buffer
+      const chunks = [];
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', async () => {
+        const pdfBuffer = Buffer.concat(chunks);
+        try {
+          await mailService.sendBudgetEmail(
+            obra.cliente.correo,
+            obra.nombre,
+            detailLevel || 'estándar',
+            pdfBuffer
+          );
+          res.json({ success: true, message: 'Correo enviado correctamente' });
+        } catch (mailError) {
+          logger.error('Error al enviar correo:', mailError);
+          const msg = mailError.message.includes('SMTP') || mailError.message.includes('auth') 
+            ? 'Error de autenticación de correo. Verifica la configuración SMTP en el servidor.'
+            : 'Error al enviar el correo.';
+          res.status(500).json({ success: false, message: msg });
+        }
+      });
+      
+    } catch (error) {
+      logger.error('Error en sendBudgetByEmail:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Error al procesar la solicitud'
       });
     }
   };

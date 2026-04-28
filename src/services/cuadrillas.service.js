@@ -171,7 +171,7 @@ export class CuadrillasService {
         .from('cuadrillas')
         .select(`
           *,
-          apu_detalles (
+          apu_detalle (
             id,
             cantidad,
             precio_unitario,
@@ -186,9 +186,9 @@ export class CuadrillasService {
       if (error) throw error;
       
       // Calcular estadísticas de uso
-      if (data && data.apu_detalles) {
-        data.total_usos = data.apu_detalles.length;
-        data.total_valor = data.apu_detalles.reduce((sum, detalle) => 
+      if (data && data.apu_detalle) {
+        data.total_usos = data.apu_detalle.length;
+        data.total_valor = data.apu_detalle.reduce((sum, detalle) => 
           sum + (detalle.cantidad * detalle.precio_unitario), 0);
       }
       

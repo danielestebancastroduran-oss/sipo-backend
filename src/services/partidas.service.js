@@ -180,8 +180,8 @@ export class PartidasService {
           }
         };
 
-        if (partida.apu_detalles) {
-          partida.apu_detalles.forEach(detalle => {
+        const apuList = partida.apu_detalle || [];
+        apuList.forEach(detalle => {
             const subtotal = detalle.cantidad * detalle.precio_unitario;
             const detalleInfo = {
               ...detalle,
@@ -199,8 +199,6 @@ export class PartidasService {
               partidaAnalysis.detalles_por_tipo.equipos.push(detalleInfo);
             }
           });
-        }
-
         analysis.partidas_analizadas.push(partidaAnalysis);
         analysis.total_directo += partidaAnalysis.subtotal;
       });

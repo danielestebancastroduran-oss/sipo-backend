@@ -1,5 +1,6 @@
 import express from 'express';
 import { ObrasController } from '../controllers/obras.controller.js';
+import { CostosIndirectosController } from '../controllers/costos_indirectos.controller.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { generateObraPdf } from '../controllers/pdf.controller.js';
 import {
@@ -13,6 +14,7 @@ import {
 
 const router = express.Router();
 const obrasController = new ObrasController();
+const costosController = new CostosIndirectosController();
 
 // 🔒 Rutas específicas ANTES de /:id
 router.get('/usuario/:usuario_id', authMiddleware, validateParams(UsuarioIdParamSchema), obrasController.getByUsuario);
@@ -28,7 +30,14 @@ router.put('/:id', authMiddleware, validateParams(IdParamSchema), validateBody(O
 router.delete('/:id', authMiddleware, validateParams(IdParamSchema), obrasController.delete);
 router.get('/:id/partidas', authMiddleware, validateParams(IdParamSchema), obrasController.getWithPartidas);
 
-// 📄 Generación de PDF
+// 💰 Costos Indirectos (AIU)
+router.get('/:id/costos', authMiddleware, validateParams(IdParamSchema), costosController.getByObra);
+router.put('/:id/costos', authMiddleware, validateParams(IdParamSchema), costosController.updateAIU);
+router.post('/:id/costos/admin', authMiddleware, validateParams(IdParamSchema), costosController.createAdminItem);
+router.delete('/:id/costos/admin/:itemId', authMiddleware, costosController.deleteAdminItem);
+
+// 📄 Generación de PDF y Envío de Correo
 router.get('/:id/pdf', authMiddleware, validateParams(IdParamSchema), generateObraPdf);
+router.post('/:id/send-email', authMiddleware, validateParams(IdParamSchema), obrasController.sendBudgetByEmail);
 
 export default router;
